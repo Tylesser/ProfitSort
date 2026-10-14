@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- New **Owned free** option: reagents already in your bags and bank count as free, so Cost and Profit show what crafting from your own stock earns. The tooltip shows how many of each reagent you have.
+- The Margin column header is no longer cut off.
+- Shorter status text ("17/17 priced") to make room for the new option.
+
 ## 1.0.0
 
 - First release.

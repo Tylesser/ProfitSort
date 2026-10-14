@@ -9,6 +9,7 @@ ns.defaults = {
   ascending = false,
   craftableOnly = false,
   hideUnpriced = false,
+  ownedFree = false,
   shown = true,
   position = nil,
 }
@@ -98,8 +99,24 @@ function ns.GetReagentUnitPrice(link, itemID)
   return nil, "missing"
 end
 
+local GetItemCount = (C_Item and C_Item.GetItemCount) or GetItemCount
+
+-- How many of a reagent you have in your bags and bank (any of its qualities).
+local function OwnedCount(reagent)
+  local itemIDs = reagent.alternatives or {reagent.itemID}
+  local total = 0
+  for _, itemID in ipairs(itemIDs) do
+    if itemID then
+      total = total + (GetItemCount(itemID, true) or 0)
+    end
+  end
+  return total
+end
+
 -- Fills in cost/value/profit/margin on a recipe entry produced by a provider.
-function ns.Evaluate(entry)
+-- With ownedFree, reagents you already own cost nothing; only the part of a
+-- reagent you would still have to buy is counted.
+function ns.Evaluate(entry, ownedFree)
   local cost, missing = 0, false
 
   for _, reagent in ipairs(entry.reagents) do
@@ -115,15 +132,27 @@ function ns.Evaluate(entry)
       end
     end
     reagent.unitPrice, reagent.source, reagent.chosenItemID = unit, source, chosenID
-    if unit then
-      cost = cost + unit * reagent.count
-    else
-      missing = true
+
+    local toBuy = reagent.count
+    reagent.owned = nil
+    if ownedFree then
+      reagent.owned = OwnedCount(reagent)
+      toBuy = math.max(0, reagent.count - reagent.owned)
+    end
+    reagent.toBuy = toBuy
+
+    if toBuy > 0 then
+      if unit then
+        cost = cost + unit * toBuy
+      else
+        missing = true
+      end
     end
   end
 
   entry.cost = cost
   entry.missingReagents = missing
+  entry.ownedFree = ownedFree and true or false
 
   local unitAH
   if entry.link or entry.itemID then

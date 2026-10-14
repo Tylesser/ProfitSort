@@ -12,11 +12,11 @@ local COL_GAP = 4
 local ICON_SPACE = 20
 
 local COLUMNS = {
-  {key = "name", label = "Recipe", width = 176, justify = "LEFT"},
+  {key = "name", label = "Recipe", width = 168, justify = "LEFT"},
   {key = "cost", label = "Cost", width = 64, justify = "RIGHT"},
   {key = "value", label = "AH Value", width = 64, justify = "RIGHT"},
   {key = "profit", label = "Profit", width = 64, justify = "RIGHT"},
-  {key = "margin", label = "Margin", width = 44, justify = "RIGHT"},
+  {key = "margin", label = "Margin", width = 52, justify = "RIGHT"},
 }
 
 local CONTENT_WIDTH = -COL_GAP
@@ -97,20 +97,28 @@ local function RowOnEnter(self)
   for _, reagent in ipairs(entry.reagents) do
     local itemID = reagent.chosenItemID or reagent.itemID
     local name = reagent.name or ns.ItemName(itemID) or ("item:" .. tostring(itemID))
+    local toBuy = reagent.toBuy or reagent.count
     local right
-    if reagent.unitPrice then
-      right = ns.FormatMoney(reagent.unitPrice * reagent.count)
+    if toBuy == 0 then
+      right = "|cff40ff40owned|r"
+    elseif reagent.unitPrice then
+      right = ns.FormatMoney(reagent.unitPrice * toBuy)
       if reagent.source == "vendor" then
         right = "|cff909090(vendor)|r " .. right
       end
     else
       right = "|cffff5050no price|r"
     end
-    GameTooltip:AddDoubleLine(("%dx %s"):format(reagent.count, name), right, 1, 1, 1, 1, 1, 1)
+    local left = ("%dx %s"):format(reagent.count, name)
+    if reagent.owned and reagent.owned > 0 then
+      left = left .. (" |cff40ff40(have %d)|r"):format(reagent.owned)
+    end
+    GameTooltip:AddDoubleLine(left, right, 1, 1, 1, 1, 1, 1)
   end
 
   GameTooltip:AddLine(" ")
-  GameTooltip:AddDoubleLine("Crafting cost", ns.FormatMoney(entry.cost), 1, 1, 1, 1, 1, 1)
+  local costLabel = entry.ownedFree and "Cost to buy what you lack" or "Crafting cost"
+  GameTooltip:AddDoubleLine(costLabel, ns.FormatMoney(entry.cost), 1, 1, 1, 1, 1, 1)
   if entry.unitAH then
     local made = entry.numMade ~= 1 and (" x%g"):format(entry.numMade) or ""
     GameTooltip:AddDoubleLine("AH value" .. made .. " (after 5% cut)", ns.FormatMoney(entry.value),
@@ -308,6 +316,10 @@ local function Create()
     "Hide recipes whose crafted item has no Auctionator price.")
   priced:SetPoint("LEFT", craftable.label, "RIGHT", 12, 0)
 
+  local owned = CreateCheck("Owned free", "ownedFree",
+    "Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns.")
+  owned:SetPoint("LEFT", priced.label, "RIGHT", 12, 0)
+
   status = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   status:SetPoint("BOTTOMRIGHT", -14, 14)
   status:SetJustifyH("RIGHT")
@@ -370,7 +382,7 @@ function UI:Refresh()
   wipe(entries)
   local pricedCount = 0
   for _, entry in ipairs(all) do
-    ns.Evaluate(entry)
+    ns.Evaluate(entry, ProfitSortDB.ownedFree)
     if entry.unitAH then
       pricedCount = pricedCount + 1
     end
@@ -391,7 +403,7 @@ function UI:Refresh()
   if #all > 0 and pricedCount == 0 then
     status:SetText("|cffff8000No AH prices yet - scan at the AH|r")
   else
-    status:SetText(("%d of %d recipes priced"):format(pricedCount, #all))
+    status:SetText(("%d/%d priced"):format(pricedCount, #all))
   end
 
   for _, header in ipairs(headers) do
