@@ -1,0 +1,15 @@
+## Interface: 16001, 11508, 11509, 20506, 38000, 50504, 120100, 120105
+## Title: Tylesser - Auctionator Profit Sort
+## Notes: Lists your profession recipes sorted by profit, crafting cost or auction value, using Auctionator's price data.
+## Author: Tylesser
+## Version: @project-version@
+## RequiredDeps: Auctionator
+## SavedVariables: ProfitSortDB
+## IconTexture: Interface\Icons\INV_Misc_Coin_02
+## X-License: MIT
+## X-Website: https://github.com/Tylesser/ProfitSort
+
+Core.lua
+Providers.lua
+UI.lua
+Events.lua

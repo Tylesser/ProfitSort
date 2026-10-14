@@ -1,0 +1,11 @@
+package-as: ProfitSort
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+required-dependencies:
+  - auctionator
+
+ignore:
+  - README.md
