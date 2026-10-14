@@ -4,6 +4,8 @@
 
 A World of Warcraft addon that lists your profession recipes sorted by **profit**, **crafting cost**, **AH value** or **margin**, using the price data collected by [Auctionator](https://www.curseforge.com/wow/addons/auctionator).
 
+![ProfitSort panel next to the Alchemy window](branding/screenshot.png)
+
 ## Features
 
 - A panel docked next to the profession window, with one row per recipe:
