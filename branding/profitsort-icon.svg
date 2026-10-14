@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+  <radialGradient id="bg" cx="50%" cy="38%" r="78%">
+    <stop offset="0" stop-color="#33295c"/>
+    <stop offset="0.6" stop-color="#1b1633"/>
+    <stop offset="1" stop-color="#0c0a17"/>
+  </radialGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff0b8"/>
+    <stop offset="0.35" stop-color="#f6c94f"/>
+    <stop offset="1" stop-color="#a66f12"/>
+  </linearGradient>
+  <linearGradient id="goldSide" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#8a5a0c"/>
+    <stop offset="0.3" stop-color="#e9b43c"/>
+    <stop offset="0.55" stop-color="#ffe08a"/>
+    <stop offset="1" stop-color="#9a650f"/>
+  </linearGradient>
+  <linearGradient id="goldTop" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff4c9"/>
+    <stop offset="1" stop-color="#e0a53a"/>
+  </linearGradient>
+  <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#b9fff0"/>
+    <stop offset="0.5" stop-color="#2fd6a8"/>
+    <stop offset="1" stop-color="#0b7a5c"/>
+  </linearGradient>
+  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="10" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.55"/>
+  </filter></defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g filter="url(#shadow)"><path d="M76 328 L76 438 A56 22.400000000000002 0 0 0 188 438 L188 328 Z"
+    fill="url(#goldSide)" stroke="#4a2f05" stroke-width="4"/><path d="M76 412 A56 22.400000000000002 0 0 0 188 412" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M76 386 A56 22.400000000000002 0 0 0 188 386" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M76 360 A56 22.400000000000002 0 0 0 188 360" fill="none" stroke="#6b4508" stroke-width="4"/><ellipse cx="132" cy="328" rx="56" ry="22.400000000000002" fill="url(#goldTop)" stroke="#4a2f05" stroke-width="4"/><ellipse cx="132" cy="328" rx="36.96" ry="13.888000000000002" fill="none" stroke="#b07a1c" stroke-width="4"/></g>
+  <g filter="url(#shadow)"><path d="M200 248 L200 438 A56 22.400000000000002 0 0 0 312 438 L312 248 Z"
+    fill="url(#goldSide)" stroke="#4a2f05" stroke-width="4"/><path d="M200 412 A56 22.400000000000002 0 0 0 312 412" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M200 386 A56 22.400000000000002 0 0 0 312 386" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M200 360 A56 22.400000000000002 0 0 0 312 360" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M200 334 A56 22.400000000000002 0 0 0 312 334" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M200 308 A56 22.400000000000002 0 0 0 312 308" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M200 282 A56 22.400000000000002 0 0 0 312 282" fill="none" stroke="#6b4508" stroke-width="4"/><ellipse cx="256" cy="248" rx="56" ry="22.400000000000002" fill="url(#goldTop)" stroke="#4a2f05" stroke-width="4"/><ellipse cx="256" cy="248" rx="36.96" ry="13.888000000000002" fill="none" stroke="#b07a1c" stroke-width="4"/></g>
+  <g filter="url(#shadow)"><path d="M324 168 L324 438 A56 22.400000000000002 0 0 0 436 438 L436 168 Z"
+    fill="url(#goldSide)" stroke="#4a2f05" stroke-width="4"/><path d="M324 412 A56 22.400000000000002 0 0 0 436 412" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 386 A56 22.400000000000002 0 0 0 436 386" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 360 A56 22.400000000000002 0 0 0 436 360" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 334 A56 22.400000000000002 0 0 0 436 334" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 308 A56 22.400000000000002 0 0 0 436 308" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 282 A56 22.400000000000002 0 0 0 436 282" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 256 A56 22.400000000000002 0 0 0 436 256" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 230 A56 22.400000000000002 0 0 0 436 230" fill="none" stroke="#6b4508" stroke-width="4"/><path d="M324 204 A56 22.400000000000002 0 0 0 436 204" fill="none" stroke="#6b4508" stroke-width="4"/><ellipse cx="380" cy="168" rx="56" ry="22.400000000000002" fill="url(#goldTop)" stroke="#4a2f05" stroke-width="4"/><ellipse cx="380" cy="168" rx="36.96" ry="13.888000000000002" fill="none" stroke="#b07a1c" stroke-width="4"/></g>
+  <g filter="url(#glow)">
+    <polyline points="66,226 166,152 234,188 360,82" fill="none" stroke="#2fd67f"
+      stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <polygon points="404,40 392,134 314,78" fill="#2fd67f" stroke="#2fd67f" stroke-width="10" stroke-linejoin="round"/>
+  </g>
+  <rect x="10" y="10" width="492" height="492" rx="28" fill="none" stroke="#f6c94f" stroke-opacity="0.45" stroke-width="8"/>
+</svg>

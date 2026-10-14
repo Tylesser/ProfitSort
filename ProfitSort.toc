@@ -5,7 +5,7 @@
 ## Version: @project-version@
 ## RequiredDeps: Auctionator
 ## SavedVariables: ProfitSortDB
-## IconTexture: Interface\Icons\INV_Misc_Coin_02
+## IconTexture: Interface\AddOns\ProfitSort\Media\Icon
 ## X-License: MIT
 ## X-Website: https://github.com/Tylesser/ProfitSort
 

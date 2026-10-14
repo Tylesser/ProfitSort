@@ -1,3 +1,5 @@
+<img src="branding/profitsort-icon-512.png" width="96" align="right" alt="">
+
 # Tylesser - Auctionator Profit Sort
 
 A World of Warcraft addon that lists your profession recipes sorted by **profit**, **crafting cost**, **AH value** or **margin**, using the price data collected by [Auctionator](https://www.curseforge.com/wow/addons/auctionator).

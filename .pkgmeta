@@ -9,3 +9,4 @@ required-dependencies:
 
 ignore:
   - README.md
+  - branding
