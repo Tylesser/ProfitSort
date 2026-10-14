@@ -16,3 +16,4 @@ Providers.lua
 UI.lua
 Events.lua
 Vendor.lua
+Options.lua

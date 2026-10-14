@@ -2,7 +2,7 @@
 
 ## 1.2.0
 
-- New **vendor flip finder**: at any vendor, items that sell for at least 10% and 1 silver more on the auction house (after the 5% cut) get a green border, a "+profit" label and a tooltip line. Works with Tylesser - Vendor Search filtering. Turn it off or on with `/psort flips`.
+- New **vendor flip finder**: at any vendor, items that sell for at least 10% and 1 silver more on the auction house (after the 5% cut) get a green border, a "+profit" label and a tooltip line. Works with Tylesser - Vendor Search filtering. Turn it off or on in the new options page (Esc > Options > AddOns > Tylesser - Auctionator Profit Sort, or `/psort options`) or with `/psort flips`.
 
 ## 1.1.0
 
