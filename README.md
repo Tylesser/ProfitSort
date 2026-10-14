@@ -34,7 +34,7 @@ Open any profession. The panel appears on the right of the profession window.
 | `/psort` or `/profitsort` | Show or hide the panel |
 | `/psort reset` | Dock the panel next to the profession window again after you moved it |
 
-When the panel is closed, a **Profit** button next to the profession window opens it again.
+When the panel is closed, click the addon icon next to the profession window to open it again.
 
 ## Installation
 

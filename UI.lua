@@ -379,14 +379,27 @@ local function Create()
   status:SetPoint("RIGHT", shoppingButton, "LEFT", -8, 0)
   status:SetJustifyH("RIGHT")
 
-  -- Small button that reopens the panel after it was closed
-  toggle = CreateFrame("Button", "ProfitSortToggle", UIParent, "UIPanelButtonTemplate")
-  toggle:SetSize(64, 22)
-  toggle:SetText("Profit")
+  -- Addon icon next to the profession window that reopens the panel
+  toggle = CreateFrame("Button", "ProfitSortToggle", UIParent)
+  toggle:SetSize(36, 36)
+  toggle:SetNormalTexture("Interface\\AddOns\\ProfitSort\\Media\\Icon")
+  toggle:SetPushedTexture("Interface\\AddOns\\ProfitSort\\Media\\Icon")
+  local pushed = toggle:GetPushedTexture()
+  if pushed then
+    pushed:SetVertexColor(0.75, 0.75, 0.75)
+  end
+  toggle:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
   toggle:SetScript("OnClick", function()
     ProfitSortDB.shown = true
     UI:UpdateVisibility()
   end)
+  toggle:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText("Tylesser - Auctionator Profit Sort", 1, 0.82, 0)
+    GameTooltip:AddLine("Click to show the profit list.", 1, 1, 1)
+    GameTooltip:Show()
+  end)
+  toggle:SetScript("OnLeave", RowOnLeave)
   toggle:Hide()
 end
 
