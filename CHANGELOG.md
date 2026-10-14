@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- New **vendor flip finder**: at any vendor, items that sell for at least 10% and 1 silver more on the auction house (after the 5% cut) get a green border, a "+profit" label and a tooltip line. Works with Tylesser - Vendor Search filtering. Turn it off or on with `/psort flips`.
+
 ## 1.1.0
 
 - New **Per Skill** column: estimated cost per skill point from the recipe's colour (orange 100%, yellow ~75%, green ~25%, gray none). Sort by it to find the cheapest way to level a profession.

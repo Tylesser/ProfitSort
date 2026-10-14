@@ -11,6 +11,7 @@ ns.defaults = {
   hideUnpriced = false,
   ownedFree = false,
   queue = {},
+  vendorFlips = true,
   shown = true,
   position = nil,
 }

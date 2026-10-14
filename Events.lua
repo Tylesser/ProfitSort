@@ -163,6 +163,12 @@ SlashCmdList.PROFITSORT = function(msg)
     print("|cffffd700Tylesser - Auctionator Profit Sort|r: panel docked to the profession window again.")
     return
   end
+  if msg == "flips" then
+    ns.SetVendorFlips(not ProfitSortDB.vendorFlips)
+    print("|cffffd700Tylesser - Auctionator Profit Sort|r: vendor flip marks " ..
+      (ProfitSortDB.vendorFlips and "on." or "off."))
+    return
+  end
   ProfitSortDB.shown = not ProfitSortDB.shown
   ns.UI:UpdateVisibility()
   if not active then
