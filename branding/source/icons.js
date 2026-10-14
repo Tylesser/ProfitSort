@@ -266,6 +266,91 @@ const addonSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   </g>
 </svg>`;
 
+// ---------------------------------------------------- vendor search icon
+const vendorDefs = `
+  <linearGradient id="leather" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#c58a52"/>
+    <stop offset="0.5" stop-color="#8a5328"/>
+    <stop offset="1" stop-color="#4a2a10"/>
+  </linearGradient>
+  <linearGradient id="leatherLight" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#d9a26a"/>
+    <stop offset="1" stop-color="#8a5328"/>
+  </linearGradient>
+  <radialGradient id="lens" cx="40%" cy="35%" r="70%">
+    <stop offset="0" stop-color="#e6fffb" stop-opacity="0.55"/>
+    <stop offset="0.5" stop-color="#5fe0c8" stop-opacity="0.28"/>
+    <stop offset="1" stop-color="#1c6f7a" stop-opacity="0.45"/>
+  </radialGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#3a1f0c"/>
+    <stop offset="0.5" stop-color="#7a4a22"/>
+    <stop offset="1" stop-color="#2a1608"/>
+  </linearGradient>`;
+
+function coinFlat(cx, cy, r) {
+  return `<ellipse cx="${cx}" cy="${cy + 4}" rx="${r}" ry="${r * 0.42}" fill="#7a4d08"/>
+    <ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r * 0.42}" fill="url(#goldTop)" stroke="#4a2f05" stroke-width="3"/>
+    <ellipse cx="${cx}" cy="${cy}" rx="${r * 0.62}" ry="${r * 0.26}" fill="none" stroke="#b07a1c" stroke-width="3"/>`;
+}
+
+function sack() {
+  return `<g filter="url(#shadow)">
+    <path d="M206 176 C120 210 86 310 108 386 C124 444 182 462 242 462 C302 462 360 444 374 386
+      C394 306 334 210 270 176 Z" fill="url(#leather)" stroke="#2e1606" stroke-width="5"/>
+    <path d="M140 300 C150 250 180 215 214 196" fill="none" stroke="#e9b98a" stroke-opacity="0.35"
+      stroke-width="10" stroke-linecap="round"/>
+    <path d="M124 392 C150 440 200 448 242 448 C290 448 330 440 356 396" fill="none" stroke="#2e1606"
+      stroke-opacity="0.6" stroke-width="3" stroke-dasharray="10 8"/>
+    <path d="M206 176 L180 118 Q206 136 222 110 Q240 136 258 108 Q270 134 296 120 L270 176 Z"
+      fill="url(#leatherLight)" stroke="#2e1606" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M198 174 Q238 192 278 174" fill="none" stroke="#3d2604" stroke-width="16" stroke-linecap="round"/>
+    <path d="M198 174 Q238 192 278 174" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M238 184 L224 222 M238 184 L256 220" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="232" cy="336" r="44" fill="url(#gold)" stroke="#4a2f05" stroke-width="5"/>
+    <circle cx="232" cy="336" r="30" fill="none" stroke="#8a5a0c" stroke-width="4"/>
+    <path d="M232 314 L246 336 L232 358 L218 336 Z" fill="url(#gem)" stroke="#03261c" stroke-width="3"/>
+  </g>
+  ${coinFlat(118, 452, 30)}${coinFlat(166, 466, 26)}${coinFlat(86, 470, 24)}`;
+}
+
+function magnifier(cx, cy, r) {
+  const dx = 0.6, dy = 0.8;
+  const sx = f(cx + dx * (r + 10)), sy = f(cy + dy * (r + 10));
+  const ex = f(sx + dx * 150), ey = f(sy + dy * 150);
+  return `<g filter="url(#shadow)">
+    <line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="#2a1608" stroke-width="40" stroke-linecap="round"/>
+    <line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="url(#wood)" stroke-width="32" stroke-linecap="round"/>
+    <line x1="${f(sx + dx * 50)}" y1="${f(sy + dy * 50)}" x2="${f(sx + dx * 62)}" y2="${f(sy + dy * 62)}"
+      stroke="url(#gold)" stroke-width="36"/>
+    <line x1="${f(sx + dx * 110)}" y1="${f(sy + dy * 110)}" x2="${f(sx + dx * 122)}" y2="${f(sy + dy * 122)}"
+      stroke="url(#gold)" stroke-width="36"/>
+    <line x1="${sx}" y1="${sy}" x2="${f(sx + dx * 18)}" y2="${f(sy + dy * 18)}" stroke="url(#gold)" stroke-width="30"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#lens)"/>
+    <path d="M${f(cx - r * 0.62)} ${f(cy - r * 0.2)} A${r * 0.66} ${r * 0.66} 0 0 1 ${f(cx - r * 0.1)} ${f(cy - r * 0.64)}"
+      fill="none" stroke="#ffffff" stroke-opacity="0.75" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#3d2604" stroke-width="30"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="url(#gold)" stroke-width="22"/>
+    <circle cx="${cx}" cy="${cy}" r="${r - 11}" fill="none" stroke="#3d2604" stroke-width="2.5"/>
+  </g>
+  ${gemStud(f(cx), f(cy - r), 7)}`;
+}
+
+const vendorSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>${defs}${vendorDefs}</defs>
+  <g clip-path="url(#frameClip)">
+    ${background()}
+    ${runeRing(256, 280, 200, 28, 0.9, 0.28)}
+    ${sack()}
+    ${magnifier(334, 232, 92)}
+    ${sparkle(300, 196, 10)}${sparkle(410, 92, 8, '#d4fff5', 0.8)}
+  </g>
+  ${squareFrame()}
+  <g transform="translate(104 104) scale(0.42) translate(-256 -256)" filter="url(#shadow)">
+    ${emblem()}
+  </g>
+</svg>`;
+
 function render(svg, size) {
   return new Resvg(svg, { fitTo: { mode: 'width', value: size } }).render();
 }
@@ -298,4 +383,9 @@ fs.writeFileSync(path.join(outDir, 'profitsort-icon-512.png'), render(addonSvg, 
 fs.writeFileSync(path.join(outDir, 'profitsort-icon-400.png'), render(addonSvg, 400).asPng());
 fs.writeFileSync(path.join(outDir, 'profitsort-icon-64.png'), render(addonSvg, 64).asPng());
 fs.writeFileSync(path.join(outDir, 'Icon.tga'), toTga(render(addonSvg, 64)));
+fs.writeFileSync(path.join(outDir, 'vendorsearch-icon.svg'), vendorSvg);
+fs.writeFileSync(path.join(outDir, 'vendorsearch-icon-512.png'), render(vendorSvg, 512).asPng());
+fs.writeFileSync(path.join(outDir, 'vendorsearch-icon-400.png'), render(vendorSvg, 400).asPng());
+fs.writeFileSync(path.join(outDir, 'vendorsearch-icon-64.png'), render(vendorSvg, 64).asPng());
+fs.writeFileSync(path.join(outDir, 'VendorSearchIcon.tga'), toTga(render(vendorSvg, 64)));
 console.log('written to ' + outDir);
