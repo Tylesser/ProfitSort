@@ -10,6 +10,7 @@ ns.defaults = {
   craftableOnly = false,
   hideUnpriced = false,
   ownedFree = false,
+  queue = {},
   shown = true,
   position = nil,
 }
@@ -113,6 +114,24 @@ local function OwnedCount(reagent)
   return total
 end
 
+-- Estimated chance of a skill point by recipe colour. The game uses
+-- (gray - skill) / (gray - yellow): 100% while orange, falling from 100% to
+-- 50% through yellow and from 50% to 0% through green, so yellow and green
+-- use the middle of their range.
+ns.SKILL_CHANCE = {
+  optimal = 1,
+  medium = 0.75,
+  easy = 0.25,
+  trivial = 0,
+}
+
+function ns.OwnedCount(itemID)
+  if not itemID then
+    return 0
+  end
+  return GetItemCount(itemID, true) or 0
+end
+
 -- Fills in cost/value/profit/margin on a recipe entry produced by a provider.
 -- With ownedFree, reagents you already own cost nothing; only the part of a
 -- reagent you would still have to buy is counted.
@@ -153,6 +172,14 @@ function ns.Evaluate(entry, ownedFree)
   entry.cost = cost
   entry.missingReagents = missing
   entry.ownedFree = ownedFree and true or false
+
+  local chance = entry.difficulty and ns.SKILL_CHANCE[entry.difficulty]
+  entry.skillChance = chance
+  if chance and chance > 0 then
+    entry.skillCost = cost / (chance * (entry.skillUps or 1))
+  else
+    entry.skillCost = nil
+  end
 
   local unitAH
   if entry.link or entry.itemID then

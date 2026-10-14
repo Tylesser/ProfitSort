@@ -13,6 +13,9 @@ A World of Warcraft addon that lists your profession recipes sorted by **profit*
   - **AH Value**: auction price × average amount made × 0.95 (the auction house cut).
   - **Profit** and **Margin** (profit as a percentage of cost).
 - Click a column header to sort; click again to reverse the order.
+- **Per Skill**: estimated cost per skill point (orange 100%, yellow ~75%, green ~25% chance). Sort by it to level a profession cheaply.
+- **Owned free** option: count reagents already in your bags and bank as free.
+- **Craft queue + shopping list**: right-click recipes to queue crafts, then **Shopping list** creates an Auctionator shopping list of the reagents you still need.
 - Filters: **Craftable now** and **Has AH price**.
 - Click a row to select the recipe in the profession window; Shift-click to link the item in chat.
 - Tooltip with the reagent cost breakdown and the age of the auction price.

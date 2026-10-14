@@ -13,10 +13,11 @@ local ICON_SPACE = 20
 
 local COLUMNS = {
   {key = "name", label = "Recipe", width = 168, justify = "LEFT"},
-  {key = "cost", label = "Cost", width = 64, justify = "RIGHT"},
-  {key = "value", label = "AH Value", width = 64, justify = "RIGHT"},
-  {key = "profit", label = "Profit", width = 64, justify = "RIGHT"},
+  {key = "cost", label = "Cost", width = 60, justify = "RIGHT"},
+  {key = "value", label = "AH Value", width = 62, justify = "RIGHT"},
+  {key = "profit", label = "Profit", width = 60, justify = "RIGHT"},
   {key = "margin", label = "Margin", width = 52, justify = "RIGHT"},
+  {key = "skillCost", label = "Per Skill", width = 60, justify = "RIGHT"},
 }
 
 local CONTENT_WIDTH = -COL_GAP
@@ -26,7 +27,7 @@ end
 local PANEL_WIDTH = LEFT + CONTENT_WIDTH + 34
 local PANEL_HEIGHT = -ROWS_Y + NUM_ROWS * ROW_HEIGHT + 40
 
-local panel, scrollFrame, toggle, status
+local panel, scrollFrame, toggle, status, shoppingButton
 local rows, headers = {}, {}
 local entries = {}
 local provider, dockParent
@@ -54,14 +55,21 @@ local function SetSort(key)
     ProfitSortDB.ascending = not ProfitSortDB.ascending
   else
     ProfitSortDB.sortKey = key
-    ProfitSortDB.ascending = key == "name"
+    -- names and cost per skill point read best cheapest/A first
+    ProfitSortDB.ascending = key == "name" or key == "skillCost"
   end
   UI:Refresh()
 end
 
-local function RowOnClick(self)
+local function RowOnClick(self, button)
   local entry = self.entry
   if not entry then
+    return
+  end
+  if button == "RightButton" then
+    ns.ChangeQueue(entry, IsShiftKeyDown() and -1 or 1)
+    UI:UpdateRows()
+    UI:UpdateShoppingButton()
     return
   end
   if IsModifiedClick("CHATLINK") and entry.link then
@@ -138,7 +146,21 @@ local function RowOnEnter(self)
   if entry.missingReagents then
     GameTooltip:AddLine("Some reagents have no price, so the cost is too low", 1, 0.5, 0)
   end
+  if entry.skillChance then
+    if entry.skillCost then
+      local points = entry.skillUps and entry.skillUps > 1 and (" x" .. entry.skillUps) or ""
+      GameTooltip:AddDoubleLine(("Skill-up chance ~%d%%%s"):format(entry.skillChance * 100, points),
+        ns.FormatMoney(entry.skillCost) .. " per point", 1, 1, 1, 1, 1, 1)
+    else
+      GameTooltip:AddLine("Gray recipe: no more skill points", 0.6, 0.6, 0.6)
+    end
+  end
+  local queued = ns.QueuedCount(entry)
+  if queued > 0 then
+    GameTooltip:AddLine(("Queued: %d for the shopping list"):format(queued), 0.4, 0.73, 1)
+  end
   GameTooltip:AddLine("Click to select - Shift-click to link", 0.5, 0.5, 0.5)
+  GameTooltip:AddLine("Right-click to queue - Shift-right-click to unqueue", 0.5, 0.5, 0.5)
   GameTooltip:Show()
 end
 
@@ -268,6 +290,8 @@ local function Create()
     row:SetPoint("TOPLEFT", LEFT, ROWS_Y - (i - 1) * ROW_HEIGHT)
     row:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
 
+    row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
     if i % 2 == 0 then
       local stripe = row:CreateTexture(nil, "BACKGROUND")
       stripe:SetAllPoints()
@@ -320,8 +344,39 @@ local function Create()
     "Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns.")
   owned:SetPoint("LEFT", priced.label, "RIGHT", 12, 0)
 
+  shoppingButton = CreateFrame("Button", "ProfitSortShoppingButton", panel, "UIPanelButtonTemplate")
+  shoppingButton:SetSize(116, 20)
+  shoppingButton:SetPoint("BOTTOMRIGHT", -10, 9)
+  shoppingButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  shoppingButton:SetScript("OnClick", function(_, button)
+    if button == "RightButton" then
+      ns.ClearQueue()
+      UI:UpdateRows()
+      UI:UpdateShoppingButton()
+    else
+      ns.CreateShoppingList()
+    end
+  end)
+  shoppingButton:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetText("Auctionator shopping list", 1, 0.82, 0)
+    GameTooltip:AddLine("Right-click recipes to queue crafts, then click here.", 1, 1, 1, true)
+    GameTooltip:AddLine(("Creates the list '%s' with the reagents you still need (minus what's in your bags and bank). At the auction house the search starts right away."):format(ns.SHOPPING_LIST_NAME), 1, 1, 1, true)
+    local toBuy = ns.ReagentsToBuy()
+    if #toBuy > 0 then
+      GameTooltip:AddLine(" ")
+      for _, reagent in ipairs(toBuy) do
+        GameTooltip:AddDoubleLine(reagent.name or ("item:" .. tostring(reagent.itemID)), reagent.count, 1, 1, 1, 1, 1, 1)
+      end
+    end
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddLine("Right-click to clear the queue", 0.6, 0.6, 0.6)
+    GameTooltip:Show()
+  end)
+  shoppingButton:SetScript("OnLeave", RowOnLeave)
+
   status = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  status:SetPoint("BOTTOMRIGHT", -14, 14)
+  status:SetPoint("RIGHT", shoppingButton, "LEFT", -8, 0)
   status:SetJustifyH("RIGHT")
 
   -- Small button that reopens the panel after it was closed
@@ -352,6 +407,10 @@ function UI:UpdateRows()
       if entry.numAvailable > 0 then
         name = name .. " |cff80ff80[" .. entry.numAvailable .. "]|r"
       end
+      local queued = ns.QueuedCount(entry)
+      if queued > 0 then
+        name = name .. " |cff66bbffQ" .. queued .. "|r"
+      end
       row.cells.name:SetText(name)
       local color = entry.color
       if color then
@@ -365,6 +424,11 @@ function UI:UpdateRows()
       row.cells.value:SetText(ns.FormatMoney(entry.value))
       row.cells.profit:SetText(ns.FormatMoney(entry.profit))
       row.cells.margin:SetText(ns.FormatMargin(entry.margin))
+      if entry.skillCost then
+        row.cells.skillCost:SetText(ns.FormatMoney(entry.skillCost) .. warning)
+      else
+        row.cells.skillCost:SetText(ns.FormatMoney(nil))
+      end
       row.selected:SetShown(entry.key == selectedKey)
       row:Show()
     else
@@ -420,6 +484,15 @@ function UI:Refresh()
   end
 
   self:UpdateRows()
+  self:UpdateShoppingButton()
+end
+
+function UI:UpdateShoppingButton()
+  if not shoppingButton then
+    return
+  end
+  local total = ns.QueueTotal()
+  shoppingButton:SetText(total > 0 and ("Shopping list (%d)"):format(total) or "Shopping list")
 end
 
 function UI:UpdateVisibility()

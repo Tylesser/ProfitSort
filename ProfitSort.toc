@@ -11,6 +11,7 @@
 ## X-Website: https://github.com/Tylesser/ProfitSort
 
 Core.lua
+Shopping.lua
 Providers.lua
 UI.lua
 Events.lua

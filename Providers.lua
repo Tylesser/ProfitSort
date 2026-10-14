@@ -72,6 +72,7 @@ ns.Providers.TradeSkill = {
           numMade = (minMade + maxMade) / 2,
           numAvailable = numAvailable or 0,
           color = TypeColor(skillType),
+          difficulty = skillType,
           reagents = {},
         }
         for r = 1, GetTradeSkillNumReagents(index) do
@@ -144,6 +145,7 @@ ns.Providers.Craft = {
           numMade = 1,
           numAvailable = numAvailable or 0,
           color = TypeColor(craftType),
+          difficulty = craftType,
           reagents = {},
         }
         for r = 1, numReagents do
@@ -177,6 +179,24 @@ ns.Providers.Craft = {
 --------------------------------------------------------------------------------
 -- Modern professions window (ProfessionsFrame / C_TradeSkillUI)
 --------------------------------------------------------------------------------
+local modernNames
+-- Maps the modern difficulty enum to the classic names used everywhere else.
+local function ModernDifficulty(relativeDifficulty)
+  local difficulty = Enum and Enum.TradeskillRelativeDifficulty
+  if not difficulty or relativeDifficulty == nil then
+    return nil
+  end
+  if not modernNames then
+    modernNames = {
+      [difficulty.Optimal] = "optimal",
+      [difficulty.Medium] = "medium",
+      [difficulty.Easy] = "easy",
+      [difficulty.Trivial] = "trivial",
+    }
+  end
+  return modernNames[relativeDifficulty]
+end
+
 local modernColors
 local function ModernColor(relativeDifficulty)
   local difficulty = Enum and Enum.TradeskillRelativeDifficulty
@@ -250,6 +270,8 @@ ns.Providers.Professions = {
             numMade = (minMade + maxMade) / 2,
             numAvailable = info.numAvailable or 0,
             color = ModernColor(info.relativeDifficulty),
+            difficulty = ModernDifficulty(info.relativeDifficulty),
+            skillUps = (info.numSkillUps and info.numSkillUps > 1) and info.numSkillUps or 1,
             reagents = {},
           }
 
