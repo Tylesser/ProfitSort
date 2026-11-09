@@ -10,6 +10,7 @@
 ## X-Curse-Project-ID: 1744635
 ## X-Website: https://github.com/Tylesser/ProfitSort
 
+Tylesser.lua
 Core.lua
 Shopping.lua
 Providers.lua

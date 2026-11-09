@@ -4,15 +4,12 @@ local addonName, ns = ...
 local TITLE = "Tylesser - Auctionator Profit Sort"
 
 local function CreateCheck(parent, anchor, label, description, get, set)
-  local check = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-  check:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -14)
-  local text = check.Text or check.text
-  if not text then
-    text = check:CreateFontString(nil, "OVERLAY")
-    text:SetPoint("LEFT", check, "RIGHT", 2, 0)
+  local check = ns.T.Check(parent, label)
+  if anchor then
+    check:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -26, -14)
+  else
+    check:SetPoint("TOPLEFT", parent, "TOPLEFT", 14, ns.T.OPTIONS_TOP)
   end
-  text:SetFontObject("GameFontHighlight")
-  text:SetText(label)
 
   local help = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   help:SetPoint("TOPLEFT", check, "BOTTOMLEFT", 26, 0)
@@ -33,15 +30,10 @@ local function CreateOptions()
   local panel = CreateFrame("Frame")
   panel.name = TITLE
 
-  local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  title:SetPoint("TOPLEFT", 16, -16)
-  title:SetText(TITLE)
+  ns.T.OptionsPage(panel, "Profit Sort",
+    "Profession profits from Auctionator prices. Sort and filter options are in the profit panel itself.")
 
-  local subtitle = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-  subtitle:SetText("Profession profits from Auctionator prices. Sort and filter options are in the profit panel itself.")
-
-  local _, help = CreateCheck(panel, subtitle, "Highlight vendor flips",
+  local _, help = CreateCheck(panel, nil, "Highlight vendor flips",
     "At a vendor, give items that sell for at least 10% and 1 silver more on the auction house "
       .. "(after the 5% cut) a green border, a \"+profit\" label and a tooltip line. Same as /psort flips.",
     function()

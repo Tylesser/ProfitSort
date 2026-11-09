@@ -3,7 +3,7 @@ local _, ns = ...
 -- A small craft queue (right-click recipes) that becomes an Auctionator
 -- shopping list of the reagents you still need to buy.
 ns.SHOPPING_LIST_NAME = "Profit Sort"
-ns.PREFIX = "|cffffd700Tylesser - Auctionator Profit Sort|r: "
+ns.PREFIX = ns.T.Prefix("Profit Sort")
 
 local function Queue()
   ProfitSortDB.queue = ProfitSortDB.queue or {}

@@ -4,6 +4,9 @@ Shared conventions, release steps and the game client are in the workspace file 
 
 ## Files (load order from ProfitSort.toc)
 
+- `Tylesser.lua`: the shared Tylesser "Runestone" look (`ns.T`: stone panels, gold borders, studs, Cinzel, buttons,
+  check boxes, options page header, chat prefix). Loaded first. The same file is in every Tylesser addon: edit them together
+  (see the workspace CLAUDE.md).
 - `Core.lua`: constants (`ns.AH_CUT = 0.95`), `ProfitSortDB` defaults (applied on load in `Events.lua`), and price lookups. Prices come
   **only** from the documented `Auctionator.API.v1` (caller ID = addon name); never read Auctionator internals.
   Vendor prices come first for reagents, Auctionator after that.

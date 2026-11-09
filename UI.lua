@@ -6,7 +6,7 @@ ns.UI = UI
 local ROW_HEIGHT = 18
 local NUM_ROWS = 20
 local LEFT = 12
-local HEADER_Y = -30
+local HEADER_Y = -40
 local ROWS_Y = HEADER_Y - 20
 local COL_GAP = 4
 local ICON_SPACE = 20
@@ -169,16 +169,8 @@ local function RowOnLeave()
 end
 
 local function CreateCheck(label, dbKey, tooltip)
-  local check = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
-  check:SetSize(22, 22)
-  local text = check.Text or check.text
-  if not text then
-    text = check:CreateFontString(nil, "OVERLAY")
-    text:SetPoint("LEFT", check, "RIGHT", 2, 0)
-  end
-  text:SetFontObject("GameFontHighlightSmall")
-  text:SetText(label)
-  check.label = text
+  local check = ns.T.Check(panel, label, "GameFontHighlightSmall")
+  check:SetHitRectInsets(0, -(check.label:GetStringWidth() + 4), 0, 0)
 
   check:SetScript("OnShow", function(self)
     self:SetChecked(ProfitSortDB[dbKey])
@@ -197,7 +189,7 @@ local function CreateCheck(label, dbKey, tooltip)
 end
 
 local function Create()
-  panel = CreateFrame("Frame", "ProfitSortPanel", UIParent, "BasicFrameTemplateWithInset")
+  panel = CreateFrame("Frame", "ProfitSortPanel", UIParent)
   panel:SetSize(PANEL_WIDTH, PANEL_HEIGHT)
   panel:SetToplevel(true)
   panel:SetClampedToScreen(true)
@@ -213,19 +205,17 @@ local function Create()
   end)
   panel:Hide()
 
-  panel.title = panel.TitleText
-  if not panel.title then
-    panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    panel.title:SetPoint("TOP", 0, -5)
-  end
+  ns.T.Stone(panel)
+  local titleBar = ns.T.TitleBar(panel, "Profit Sort")
+  panel.title = titleBar.title
 
-  local closeButton = panel.CloseButton or _G["ProfitSortPanelCloseButton"]
-  if closeButton then
-    closeButton:HookScript("OnClick", function()
-      ProfitSortDB.shown = false
-      UI:UpdateVisibility()
-    end)
-  end
+  local closeButton = ns.T.CloseButton(titleBar)
+  closeButton:SetPoint("RIGHT", -4, 0)
+  closeButton:SetScript("OnClick", function()
+    panel:Hide()
+    ProfitSortDB.shown = false
+    UI:UpdateVisibility()
+  end)
 
   -- Column headers (click to sort)
   local x = LEFT
@@ -235,7 +225,8 @@ local function Create()
     header:SetPoint("TOPLEFT", x, HEADER_Y)
     header.key = column.key
 
-    local text = header:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local text = header:CreateFontString(nil, "OVERLAY")
+    ns.T.Font(text, 10, ns.T.MUTED)
     text:SetJustifyH(column.justify)
     text:SetText(column.label)
 
@@ -261,7 +252,7 @@ local function Create()
       text:SetTextColor(1, 1, 1)
     end)
     header:SetScript("OnLeave", function()
-      text:SetTextColor(1, 0.82, 0)
+      text:SetTextColor(ns.T.MUTED[1], ns.T.MUTED[2], ns.T.MUTED[3])
     end)
 
     table.insert(headers, header)
@@ -269,7 +260,7 @@ local function Create()
   end
 
   local divider = panel:CreateTexture(nil, "ARTWORK")
-  divider:SetColorTexture(1, 1, 1, 0.15)
+  divider:SetColorTexture(ns.T.BRONZE[1], ns.T.BRONZE[2], ns.T.BRONZE[3], 0.8)
   divider:SetHeight(1)
   divider:SetPoint("TOPLEFT", LEFT, ROWS_Y + 1)
   divider:SetWidth(CONTENT_WIDTH)
@@ -334,7 +325,7 @@ local function Create()
   -- Footer
   local craftable = CreateCheck("Craftable now", "craftableOnly",
     "Only show recipes you have the reagents for right now.")
-  craftable:SetPoint("BOTTOMLEFT", 10, 8)
+  craftable:SetPoint("BOTTOMLEFT", 10, 9)
 
   local priced = CreateCheck("Has AH price", "hideUnpriced",
     "Hide recipes whose crafted item has no Auctionator price.")
@@ -344,9 +335,8 @@ local function Create()
     "Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns.")
   owned:SetPoint("LEFT", priced.label, "RIGHT", 12, 0)
 
-  shoppingButton = CreateFrame("Button", "ProfitSortShoppingButton", panel, "UIPanelButtonTemplate")
-  shoppingButton:SetSize(116, 20)
-  shoppingButton:SetPoint("BOTTOMRIGHT", -10, 9)
+  shoppingButton = ns.T.Button(panel, 116, 20)
+  shoppingButton:SetPoint("BOTTOMRIGHT", -12, 11)
   shoppingButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   shoppingButton:SetScript("OnClick", function(_, button)
     if button == "RightButton" then
