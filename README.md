@@ -14,7 +14,7 @@ A World of Warcraft addon that lists your profession recipes sorted by **profit*
   - **Profit** and **Margin** (profit as a percentage of cost).
 - Click a column header to sort; click again to reverse the order.
 - **Per Skill**: estimated cost per skill point (orange 100%, yellow ~75%, green ~25% chance). Sort by it to level a profession cheaply.
-- **Owned free** option: count reagents already in your bags and bank as free.
+- **Owned free** option: count reagents already in your bags and bank as free. While it's on, the box shows how many recipes in the list it lowers the cost of, like "Owned free (12)".
 - **Craft queue + shopping list**: right-click recipes to queue crafts, then **Shopping list** creates an Auctionator shopping list of the reagents you still need.
 - **Vendor flip finder**: at any vendor, items worth at least 10% and 1 silver more on the auction house (after the 5% cut) get a green border, a "+profit" label and a tooltip line.
 - Filters: **Craftable now** and **Has AH price**.
@@ -36,8 +36,13 @@ Open any profession. The panel appears on the right of the profession window.
 | `/psort reset` | Dock the panel next to the profession window again after you moved it |
 | `/psort flips` | Turn the vendor flip marks off or on |
 | `/psort options` | Open the options page (also in Esc > Options > AddOns) |
+| `/psort feedback` | Get the link to report a bug or suggest an idea |
 
 When the panel is closed, click the addon icon next to the profession window to open it again.
+
+## Feedback
+
+Found a bug or have an idea? Click **Feedback** on the options page or type `/psort feedback` in game to get the link, or go straight to [tylesser.com/feedback](https://tylesser.com/feedback/#profitsort).
 
 ## Installation
 

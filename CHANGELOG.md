@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- Owned free shows how many recipes in the list it applies to, like "Owned free (12)", and its tooltip says how many of the recipes shown that is.
+- A Feedback button on the options page and a `/psort feedback` command: they show the link to tylesser.com/feedback, where you can report a bug or suggest an idea.
+
 ## 1.3.0
 
 - New Tylesser look: the profit panel and the options page are dark stone with gold borders and Cinzel headings, shared by all Tylesser addons.

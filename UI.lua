@@ -27,7 +27,8 @@ end
 local PANEL_WIDTH = LEFT + CONTENT_WIDTH + 34
 local PANEL_HEIGHT = -ROWS_Y + NUM_ROWS * ROW_HEIGHT + 40
 
-local panel, scrollFrame, toggle, status, shoppingButton
+local panel, scrollFrame, toggle, status, shoppingButton, ownedCheck
+local ownedApplied = 0 -- recipes in the list whose cost Owned free lowered
 local rows, headers = {}, {}
 local entries = {}
 local provider, dockParent
@@ -166,6 +167,34 @@ end
 
 local function RowOnLeave()
   GameTooltip:Hide()
+end
+
+-- Whether Owned free lowered the recipe's cost: you have some of at least one reagent.
+local function UsesOwned(entry)
+  if not entry.ownedFree then
+    return false
+  end
+  for _, reagent in ipairs(entry.reagents) do
+    if reagent.owned and reagent.owned > 0 and reagent.count > 0 then
+      return true
+    end
+  end
+  return false
+end
+
+local OWNED_TOOLTIP = "Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns."
+
+-- "Owned free (12)": how many recipes in the list it applies to.
+local function UpdateOwnedLabel()
+  if not ownedCheck then
+    return
+  end
+  if ProfitSortDB.ownedFree then
+    ownedCheck.label:SetText(("Owned free (%d)"):format(ownedApplied))
+  else
+    ownedCheck.label:SetText("Owned free")
+  end
+  ownedCheck:SetHitRectInsets(0, -(ownedCheck.label:GetStringWidth() + 4), 0, 0)
 end
 
 local function CreateCheck(label, dbKey, tooltip)
@@ -331,9 +360,18 @@ local function Create()
     "Hide recipes whose crafted item has no Auctionator price.")
   priced:SetPoint("LEFT", craftable.label, "RIGHT", 12, 0)
 
-  local owned = CreateCheck("Owned free", "ownedFree",
-    "Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns.")
+  local owned = CreateCheck("Owned free", "ownedFree", OWNED_TOOLTIP)
   owned:SetPoint("LEFT", priced.label, "RIGHT", 12, 0)
+  owned:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+    GameTooltip:SetText(OWNED_TOOLTIP, 1, 1, 1, 1, true)
+    if ProfitSortDB.ownedFree then
+      GameTooltip:AddLine(("Lowers the cost of %d of the %d recipes in the list."):format(ownedApplied, #entries),
+        0.25, 1, 0.25, true)
+    end
+    GameTooltip:Show()
+  end)
+  ownedCheck = owned
 
   shoppingButton = ns.T.Button(panel, 116, 20)
   shoppingButton:SetPoint("BOTTOMRIGHT", -12, 11)
@@ -465,6 +503,14 @@ function UI:Refresh()
     end
   end
   ns.SortEntries(entries, ProfitSortDB.sortKey, ProfitSortDB.ascending)
+
+  ownedApplied = 0
+  for _, entry in ipairs(entries) do
+    if UsesOwned(entry) then
+      ownedApplied = ownedApplied + 1
+    end
+  end
+  UpdateOwnedLabel()
 
   panel.title:SetText("Profit - " .. (provider.GetTitle() or "Profession"))
   if #all > 0 and pricedCount == 0 then
