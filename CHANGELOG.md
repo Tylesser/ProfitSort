@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- A **More addons** button on the options page, and the feedback window points to tylesser.com for the other Tylesser addons.
+
 ## 1.4.0
 
 - Owned free shows how many recipes in the list it applies to, like "Owned free (12)", and its tooltip says how many of the recipes shown that is.
