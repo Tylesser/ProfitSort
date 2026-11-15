@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0
+
+- **Make or buy**: when another recipe of the same profession makes a reagent for less than it costs to buy, Cost uses the crafting cost (also for that recipe's own reagents, up to 3 levels deep). The reagent tooltip shows "crafted", the recipe and what buying would cost. Turn it off with **Craft reagents when cheaper** on the options page.
+- **Profit in item tooltips**: items you can craft get a line like "Profit Sort: +2g 10s profit (cost 1g 80s)", from your last profession scan on that character. No line while Auctionator has no price for the item. Turn it off with **Show profit in item tooltips** on the options page.
+- Profit Sort is in the addon compartment (the addons button by the minimap) on clients that have it. Click it to open the options.
+
 ## 1.4.1
 
 - A **More addons** button on the options page, and the feedback window points to tylesser.com for the other Tylesser addons.

@@ -43,7 +43,7 @@ local function CreateOptions()
       ns.SetVendorFlips(enabled)
     end)
 
-  CreateCheck(panel, help, "Show the profit panel with professions",
+  _, help = CreateCheck(panel, help, "Show the profit panel with professions",
     "Open the profit panel next to the profession window. When off, click the addon icon there to open it.",
     function()
       return ProfitSortDB.shown
@@ -51,6 +51,27 @@ local function CreateOptions()
     function(enabled)
       ProfitSortDB.shown = enabled
       ns.UI:UpdateVisibility()
+    end)
+
+  _, help = CreateCheck(panel, help, "Craft reagents when cheaper",
+    "When a reagent is made by another recipe of the same profession and crafting it costs less than buying it, "
+      .. "use the crafting cost. The reagent tooltip shows \"crafted\" and what buying would cost.",
+    function()
+      return ProfitSortDB.craftReagents
+    end,
+    function(enabled)
+      ProfitSortDB.craftReagents = enabled
+      ns.RequestRefresh()
+    end)
+
+  CreateCheck(panel, help, "Show profit in item tooltips",
+    "Items you can craft get a line like \"Profit Sort: +2g 10s profit (cost 1g 80s)\" from your last "
+      .. "profession scan on this character. Only while Auctionator has a price for the item.",
+    function()
+      return ProfitSortDB.itemTooltips
+    end,
+    function(enabled)
+      ProfitSortDB.itemTooltips = enabled
     end)
 
   if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory then
@@ -61,6 +82,12 @@ local function CreateOptions()
     InterfaceOptions_AddCategory(panel)
   end
   ns.optionsPanel = panel
+
+  ns.T.AddCompartment({
+    text = TITLE,
+    onClick = ns.OpenOptions,
+    tooltip = {"Profession profits from Auctionator prices.", "Click to open the options."},
+  })
 end
 
 function ns.OpenOptions()

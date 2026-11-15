@@ -14,6 +14,14 @@ ns.defaults = {
   vendorFlips = true,
   shown = true,
   position = nil,
+  craftReagents = true, -- make or buy: craft a reagent when that is cheaper
+  itemTooltips = true, -- profit line in the tooltips of items you can craft
+}
+
+-- ProfitSortCharDB (per character): products = { [itemID] = { profit, cost, value, recipe, time } },
+-- the last scanned profit of each item you can craft (Tooltip.lua).
+ns.charDefaults = {
+  products = {},
 }
 
 -- Auctionator public API (Auctionator.API.v1). Only the documented, stable
@@ -133,11 +141,112 @@ function ns.OwnedCount(itemID)
   return GetItemCount(itemID, true) or 0
 end
 
+-- Make or buy -------------------------------------------------------------------
+-- A reagent that another recipe of the same scan makes (its product item ID is the
+-- reagent's item ID) can be crafted instead of bought. Its craft cost is that
+-- recipe's cost / average amount made, where the recipe's own reagents are again
+-- bought or crafted, whichever is cheaper. Sub-recipes always use market prices
+-- (Owned free only applies to the recipe being evaluated).
+ns.MAX_CRAFT_DEPTH = 3 -- crafts nested inside each other, counted from the recipe's own reagents
+
+-- Recipes of one scan by the item they make. Pass the result to ns.Evaluate.
+function ns.BuildCraftIndex(entries)
+  local index = {byItem = {}, buyPrices = {}}
+  for _, entry in ipairs(entries) do
+    if entry.itemID and entry.numMade and entry.numMade > 0 and entry.reagents and #entry.reagents > 0 then
+      local list = index.byItem[entry.itemID]
+      if not list then
+        list = {}
+        index.byItem[entry.itemID] = list
+      end
+      table.insert(list, entry)
+    end
+  end
+  return index
+end
+
+-- Unit buy price (vendor first, then AH), remembered for the rest of the scan.
+local function BuyPrice(index, itemID)
+  local cached = index.buyPrices[itemID]
+  if cached == nil then
+    cached = ns.GetReagentUnitPrice(nil, itemID) or false
+    index.buyPrices[itemID] = cached
+  end
+  return cached or nil
+end
+
+local CraftUnitCost
+
+-- Cheapest unit price of a reagent slot (any of its qualities), bought or crafted.
+local function SlotUnitCost(index, reagent, depth, visiting)
+  local best
+  for _, itemID in ipairs(reagent.alternatives or {reagent.itemID}) do
+    local unit = BuyPrice(index, itemID)
+    local craft = CraftUnitCost(index, itemID, depth, visiting)
+    if craft and (unit == nil or craft < unit) then
+      unit = craft
+    end
+    if unit and (best == nil or unit < best) then
+      best = unit
+    end
+  end
+  return best
+end
+
+-- Cheapest cost of making one of itemID with a recipe from the index, and that
+-- recipe. nil when no recipe makes it, a reagent has no price, the depth limit
+-- is reached or the item is already being crafted further up (a cycle).
+function CraftUnitCost(index, itemID, depth, visiting)
+  if not itemID or depth > ns.MAX_CRAFT_DEPTH or visiting[itemID] then
+    return nil
+  end
+  local recipes = index.byItem[itemID]
+  if not recipes then
+    return nil
+  end
+  visiting[itemID] = true
+  local best, bestRecipe
+  for _, recipe in ipairs(recipes) do
+    local cost = 0
+    for _, reagent in ipairs(recipe.reagents) do
+      local unit = SlotUnitCost(index, reagent, depth + 1, visiting)
+      if not unit then
+        cost = nil
+        break
+      end
+      cost = cost + unit * reagent.count
+    end
+    if cost then
+      local unitCost = cost / recipe.numMade
+      if best == nil or unitCost < best then
+        best, bestRecipe = unitCost, recipe
+      end
+    end
+  end
+  visiting[itemID] = nil
+  return best, bestRecipe
+end
+
+-- For tests and tooltips: the craft cost of one item, as at the first level.
+function ns.CraftUnitCost(index, itemID, depth)
+  return CraftUnitCost(index, itemID, depth or 1, {})
+end
+
 -- Fills in cost/value/profit/margin on a recipe entry produced by a provider.
 -- With ownedFree, reagents you already own cost nothing; only the part of a
 -- reagent you would still have to buy is counted.
-function ns.Evaluate(entry, ownedFree)
-  local cost, missing = 0, false
+-- With crafts (from ns.BuildCraftIndex), a reagent that is cheaper to craft than
+-- to buy uses its craft cost (source "craft"). Without it, nothing is crafted.
+-- entry.fullCost is the cost without Owned free (fullCostMissing: a reagent had no price).
+function ns.Evaluate(entry, ownedFree, crafts)
+  local cost, fullCost, missing, fullMissing = 0, 0, false, false
+  local visiting
+  if crafts then
+    visiting = {}
+    if entry.itemID then
+      visiting[entry.itemID] = true
+    end
+  end
 
   for _, reagent in ipairs(entry.reagents) do
     local unit, source = ns.GetReagentUnitPrice(reagent.link, reagent.itemID)
@@ -151,6 +260,20 @@ function ns.Evaluate(entry, ownedFree)
         end
       end
     end
+
+    reagent.buyPrice, reagent.craftPrice, reagent.craftRecipe = unit, nil, nil
+    if crafts then
+      local craftID
+      for _, itemID in ipairs(reagent.alternatives or {reagent.itemID}) do
+        local craftUnit, recipe = CraftUnitCost(crafts, itemID, 1, visiting)
+        if craftUnit and (reagent.craftPrice == nil or craftUnit < reagent.craftPrice) then
+          reagent.craftPrice, reagent.craftRecipe, craftID = craftUnit, recipe.name, itemID
+        end
+      end
+      if reagent.craftPrice and (unit == nil or reagent.craftPrice < unit) then
+        unit, source, chosenID = reagent.craftPrice, "craft", craftID
+      end
+    end
     reagent.unitPrice, reagent.source, reagent.chosenItemID = unit, source, chosenID
 
     local toBuy = reagent.count
@@ -161,6 +284,11 @@ function ns.Evaluate(entry, ownedFree)
     end
     reagent.toBuy = toBuy
 
+    if unit then
+      fullCost = fullCost + unit * reagent.count
+    elseif reagent.count > 0 then
+      fullMissing = true
+    end
     if toBuy > 0 then
       if unit then
         cost = cost + unit * toBuy
@@ -171,7 +299,9 @@ function ns.Evaluate(entry, ownedFree)
   end
 
   entry.cost = cost
+  entry.fullCost = fullCost
   entry.missingReagents = missing
+  entry.fullCostMissing = fullMissing
   entry.ownedFree = ownedFree and true or false
 
   local chance = entry.difficulty and ns.SKILL_CHANCE[entry.difficulty]
@@ -221,9 +351,10 @@ local GOLD = "|cffffd700g|r"
 local SILVER = "|cffc7c7cfs|r"
 local COPPER = "|cffeda55fc|r"
 
-function ns.FormatMoney(amount)
+-- plain: no colour codes ("1g 20s"), for a line that has one colour of its own.
+function ns.FormatMoney(amount, plain)
   if amount == nil then
-    return "|cff808080--|r"
+    return plain and "--" or "|cff808080--|r"
   end
   local digitColor = amount < 0 and "|cffff5050" or "|cffffffff"
   local sign = amount < 0 and "-" or ""
@@ -234,6 +365,9 @@ function ns.FormatMoney(amount)
   local copper = amount % 100
 
   local function Part(n, suffix)
+    if plain then
+      return n .. suffix:sub(11, 11) -- the letter in "|cffRRGGBBg|r"
+    end
     return digitColor .. n .. "|r" .. suffix
   end
 
@@ -253,7 +387,7 @@ function ns.FormatMoney(amount)
     text = Part(copper, COPPER)
   end
   if sign ~= "" then
-    text = digitColor .. sign .. "|r" .. text
+    text = plain and (sign .. text) or (digitColor .. sign .. "|r" .. text)
   end
   return text
 end

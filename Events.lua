@@ -100,6 +100,13 @@ local handlers = {
         ProfitSortDB[key] = value
       end
     end
+    ProfitSortCharDB = ProfitSortCharDB or {}
+    for key, value in pairs(ns.charDefaults) do
+      if ProfitSortCharDB[key] == nil then
+        ProfitSortCharDB[key] = value
+      end
+    end
+    ns.HookItemTooltips()
   end,
   PLAYER_LOGIN = function()
     ns.CallAuctionator("RegisterForDBUpdate", ns.RequestRefresh)

@@ -86,6 +86,16 @@ local function RowOnClick(self, button)
   UI:UpdateRows()
 end
 
+-- Whether make or buy chose to craft at least one reagent.
+local function UsesCrafted(entry)
+  for _, reagent in ipairs(entry.reagents) do
+    if reagent.source == "craft" and (reagent.toBuy or reagent.count) > 0 then
+      return true
+    end
+  end
+  return false
+end
+
 local function RowOnEnter(self)
   local entry = self.entry
   if not entry then
@@ -110,6 +120,8 @@ local function RowOnEnter(self)
     local right
     if toBuy == 0 then
       right = "|cff40ff40owned|r"
+    elseif reagent.source == "craft" then
+      right = "|cff909090crafted:|r " .. ns.FormatMoney(reagent.unitPrice * toBuy)
     elseif reagent.unitPrice then
       right = ns.FormatMoney(reagent.unitPrice * toBuy)
       if reagent.source == "vendor" then
@@ -123,11 +135,20 @@ local function RowOnEnter(self)
       left = left .. (" |cff40ff40(have %d)|r"):format(reagent.owned)
     end
     GameTooltip:AddDoubleLine(left, right, 1, 1, 1, 1, 1, 1)
+    -- Crafted reagents: which recipe makes it, and what buying would cost.
+    if reagent.source == "craft" and toBuy > 0 then
+      local buy = reagent.buyPrice and ns.FormatMoney(reagent.buyPrice * toBuy) or "|cff909090no price|r"
+      GameTooltip:AddDoubleLine("   |cff909090made with " .. (reagent.craftRecipe or "?") .. "|r",
+        "|cff909090buy:|r " .. buy, 1, 1, 1, 1, 1, 1)
+    end
   end
 
   GameTooltip:AddLine(" ")
   local costLabel = entry.ownedFree and "Cost to buy what you lack" or "Crafting cost"
   GameTooltip:AddDoubleLine(costLabel, ns.FormatMoney(entry.cost), 1, 1, 1, 1, 1, 1)
+  if UsesCrafted(entry) then
+    GameTooltip:AddLine("Includes reagents you craft because that is cheaper than buying them", 0.6, 0.6, 0.6, true)
+  end
   if entry.unitAH then
     local made = entry.numMade ~= 1 and (" x%g"):format(entry.numMade) or ""
     GameTooltip:AddDoubleLine("AH value" .. made .. " (after 5% cut)", ns.FormatMoney(entry.value),
@@ -311,6 +332,7 @@ local function Create()
     row:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
 
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    row.profitSortRow = true -- Tooltip.lua leaves these tooltips alone
 
     if i % 2 == 0 then
       local stripe = row:CreateTexture(nil, "BACKGROUND")
@@ -486,8 +508,9 @@ function UI:Refresh()
   local all = provider.Scan()
   wipe(entries)
   local pricedCount = 0
+  local crafts = ProfitSortDB.craftReagents and ns.BuildCraftIndex(all) or nil
   for _, entry in ipairs(all) do
-    ns.Evaluate(entry, ProfitSortDB.ownedFree)
+    ns.Evaluate(entry, ProfitSortDB.ownedFree, crafts)
     if entry.unitAH then
       pricedCount = pricedCount + 1
     end
@@ -503,6 +526,7 @@ function UI:Refresh()
     end
   end
   ns.SortEntries(entries, ProfitSortDB.sortKey, ProfitSortDB.ascending)
+  ns.RememberProducts(all)
 
   ownedApplied = 0
   for _, entry in ipairs(entries) do

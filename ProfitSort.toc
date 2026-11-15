@@ -5,6 +5,7 @@
 ## Version: @project-version@
 ## RequiredDeps: Auctionator
 ## SavedVariables: ProfitSortDB
+## SavedVariablesPerCharacter: ProfitSortCharDB
 ## IconTexture: Interface\AddOns\ProfitSort\Media\Icon
 ## X-License: MIT
 ## X-Curse-Project-ID: 1744635
@@ -18,4 +19,5 @@ Providers.lua
 UI.lua
 Events.lua
 Vendor.lua
+Tooltip.lua
 Options.lua
