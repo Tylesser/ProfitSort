@@ -49,6 +49,8 @@ The options page (Esc > Options > AddOns, `/psort options`, or Profit Sort in th
 
 Found a bug or have an idea? Click **Feedback** on the options page or type `/psort feedback` in game to get the link, or go straight to [tylesser.com/feedback](https://tylesser.com/feedback/#profitsort).
 
+No GitHub account? Join the [Tylesser Discord](https://discord.gg/n2rEB6mRxF) and post in #bug-reports or #ideas with the addon's tag; each post is copied to GitHub and the bot answers with the link.
+
 ## Installation
 
 Install from CurseForge, or download the latest zip from [Releases](https://github.com/Tylesser/ProfitSort/releases) and extract it to `Interface/AddOns`. The folder must be named `ProfitSort`.
