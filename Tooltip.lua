@@ -54,12 +54,22 @@ function ns.RememberProducts(entries)
       local profit = Round(entry.value - cost)
       local current = best[entry.itemID]
       if not current or profit > current.profit then
+        -- the materials too (the cheapest choice of each, per craft): Commerce Authority searches for them
+        -- when a writ's item is cheaper to craft than to buy (2026-11-22)
+        local reagents = {}
+        for _, reagent in ipairs(entry.reagents or {}) do
+          local itemID = reagent.chosenItemID or reagent.itemID
+          if itemID and reagent.count and reagent.count > 0 then
+            reagents[#reagents + 1] = { itemID = itemID, count = reagent.count }
+          end
+        end
         best[entry.itemID] = {
           profit = profit,
           cost = Round(cost),
           value = Round(entry.value),
           numMade = entry.numMade,
           recipe = entry.name,
+          reagents = reagents,
           time = now,
         }
       end

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0
+
+- Each crafted item now remembers its materials too, so **Commerce Authority** can search the auction house for them when crafting a writ's item is cheaper than buying it.
+
 ## 1.5.0
 
 - **Make or buy**: when another recipe of the same profession makes a reagent for less than it costs to buy, Cost uses the crafting cost (also for that recipe's own reagents, up to 3 levels deep). The reagent tooltip shows "crafted", the recipe and what buying would cost. Turn it off with **Craft reagents when cheaper** on the options page.
