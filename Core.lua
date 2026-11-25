@@ -9,6 +9,8 @@ ns.defaults = {
   ascending = false,
   craftableOnly = false,
   hideUnpriced = false,
+  minProfitOn = false, -- hide recipes that earn less than minProfit per craft (and every loss)
+  minProfit = 0, -- copper
   ownedFree = false,
   queue = {},
   vendorFlips = true,
@@ -63,6 +65,27 @@ end
 
 function ns.GetAuctionAge(link, itemID)
   return Lookup("GetAuctionAgeByItemLink", "GetAuctionAgeByItemID", link, itemID)
+end
+
+-- "1g 50s", "75s", "2.5g", "30c" -> copper. A number without g, s or c is silver. nil when the text isn't money.
+function ns.ParseMoney(text)
+  text = tostring(text or ""):lower():gsub(",", ".")
+  if not text:find("%d") then
+    return text:match("^%s*$") and 0 or nil
+  end
+  local total, bare = 0, 0
+  local rest = text:gsub("(%d*%.?%d+)%s*([gsc]?)", function(number, unit)
+    local factor = unit == "g" and 10000 or unit == "c" and 1 or 100
+    if unit == "" then
+      bare = bare + 1
+    end
+    total = total + tonumber(number) * factor
+    return ""
+  end)
+  if bare > 1 or rest:find("%S") then
+    return nil
+  end
+  return math.floor(total + 0.5)
 end
 
 function ns.ItemIDFromLink(link)

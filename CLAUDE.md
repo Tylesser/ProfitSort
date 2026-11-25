@@ -36,7 +36,7 @@ Shared conventions, release steps and the game client are in the workspace file 
 ## Saved variables
 
 - `ProfitSortDB` (account): defaults in `ns.defaults` (Core.lua): sort, filters, `ownedFree`, `queue`, `vendorFlips`,
-  `shown`, `position`, `craftReagents` (make or buy, default on), `itemTooltips` (default on).
+  `shown`, `position`, `minProfitOn` + `minProfit` (copper; the Min profit row, `ns.ParseMoney`), `craftReagents` (make or buy, default on), `itemTooltips` (default on).
 - `ProfitSortCharDB` (per character, `## SavedVariablesPerCharacter`): defaults in `ns.charDefaults`. `products[itemID] =
   { profit, cost, value, recipe, time }`: the last scan of each item you can craft, cost without Owned free, recipes with
   unpriced reagents or no AH price left out. Bounded to `ns.MAX_PRODUCTS` (500); the oldest scans are dropped first.

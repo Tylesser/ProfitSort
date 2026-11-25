@@ -25,10 +25,13 @@ for _, column in ipairs(COLUMNS) do
   CONTENT_WIDTH = CONTENT_WIDTH + column.width + COL_GAP
 end
 local PANEL_WIDTH = LEFT + CONTENT_WIDTH + 34
-local PANEL_HEIGHT = -ROWS_Y + NUM_ROWS * ROW_HEIGHT + 40
+local FILTER_ROW = 24 -- the footer has two rows: filters on top, Min profit / status / Shopping list under them
+local PANEL_HEIGHT = -ROWS_Y + NUM_ROWS * ROW_HEIGHT + 40 + FILTER_ROW
 
 local panel, scrollFrame, toggle, status, shoppingButton, ownedCheck
 local ownedApplied = 0 -- recipes in the list whose cost Owned free lowered
+local minCheck, minBox
+local minHidden, minTotal = 0, 0 -- recipes Min profit hides, of all recipes the other filters keep
 local rows, headers = {}, {}
 local entries = {}
 local provider, dockParent
@@ -218,6 +221,39 @@ local function UpdateOwnedLabel()
   ownedCheck:SetHitRectInsets(0, -(ownedCheck.label:GetStringWidth() + 4), 0, 0)
 end
 
+-- Exact money text for the Min profit box: "1g 5s 20c", "75s", "0".
+local function PlainMoney(copper)
+  copper = math.max(0, math.floor(copper or 0))
+  local parts = {}
+  local gold, silver = math.floor(copper / 10000), math.floor(copper / 100) % 100
+  if gold > 0 then
+    parts[#parts + 1] = gold .. "g"
+  end
+  if silver > 0 then
+    parts[#parts + 1] = silver .. "s"
+  end
+  if copper % 100 > 0 then
+    parts[#parts + 1] = (copper % 100) .. "c"
+  end
+  return #parts > 0 and table.concat(parts, " ") or "0"
+end
+
+local MIN_TOOLTIP = "Hide recipes that earn less than this per craft (after the 5% AH cut), every recipe that loses "
+  .. "money, and recipes without an AH price. At 0 only losses and break-even recipes are hidden."
+
+-- The amount box: Enter or clicking elsewhere applies the amount (and turns the filter on), Escape undoes.
+local function ApplyMinProfit(box)
+  local amount = ns.ParseMoney(box:GetText())
+  if amount and (amount ~= ProfitSortDB.minProfit or not ProfitSortDB.minProfitOn) and box.edited then
+    ProfitSortDB.minProfit = amount
+    ProfitSortDB.minProfitOn = true
+    minCheck:SetChecked(true)
+    UI:Refresh()
+  end
+  box.edited = false
+  box:SetText(PlainMoney(ProfitSortDB.minProfit))
+end
+
 local function CreateCheck(label, dbKey, tooltip)
   local check = ns.T.Check(panel, label, "GameFontHighlightSmall")
   check:SetHitRectInsets(0, -(check.label:GetStringWidth() + 4), 0, 0)
@@ -376,7 +412,7 @@ local function Create()
   -- Footer
   local craftable = CreateCheck("Craftable now", "craftableOnly",
     "Only show recipes you have the reagents for right now.")
-  craftable:SetPoint("BOTTOMLEFT", 10, 9)
+  craftable:SetPoint("BOTTOMLEFT", 10, 9 + FILTER_ROW)
 
   local priced = CreateCheck("Has AH price", "hideUnpriced",
     "Hide recipes whose crafted item has no Auctionator price.")
@@ -394,6 +430,48 @@ local function Create()
     GameTooltip:Show()
   end)
   ownedCheck = owned
+
+  minCheck = CreateCheck("Min profit", "minProfitOn", MIN_TOOLTIP)
+  minCheck:SetPoint("BOTTOMLEFT", 10, 9)
+  minCheck:SetHitRectInsets(0, -(minCheck.label:GetStringWidth() + 4), 0, 0)
+  minCheck:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+    GameTooltip:SetText(MIN_TOOLTIP, 1, 1, 1, 1, true)
+    if ProfitSortDB.minProfitOn then
+      GameTooltip:AddLine(("Hides %d of %d recipes."):format(minHidden, minTotal), 0.25, 1, 0.25, true)
+    end
+    GameTooltip:Show()
+  end)
+
+  minBox = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
+  minBox:SetSize(64, 18)
+  minBox:SetAutoFocus(false)
+  minBox:SetMaxLetters(16)
+  ns.T.EditBox(minBox)
+  minBox:SetPoint("LEFT", minCheck.label, "RIGHT", 10, 0)
+  minBox:SetText(PlainMoney(ProfitSortDB.minProfit))
+  minBox:SetScript("OnTextChanged", function(self, userInput)
+    if userInput then
+      self.edited = true
+    end
+  end)
+  minBox:SetScript("OnEnterPressed", function(self)
+    ApplyMinProfit(self)
+    self:ClearFocus()
+  end)
+  minBox:HookScript("OnEditFocusLost", ApplyMinProfit) -- the template clears the highlight there
+  minBox:SetScript("OnEscapePressed", function(self)
+    self.edited = false
+    self:ClearFocus()
+  end)
+  minBox:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+    GameTooltip:SetText("Min profit per craft", 1, 0.82, 0)
+    GameTooltip:AddLine("Type an amount like 50s, 1g or 1g 50s (a plain number is silver), then press Enter.",
+      1, 1, 1, true)
+    GameTooltip:Show()
+  end)
+  minBox:SetScript("OnLeave", RowOnLeave)
 
   shoppingButton = ns.T.Button(panel, 116, 20)
   shoppingButton:SetPoint("BOTTOMRIGHT", -12, 11)
@@ -509,6 +587,7 @@ function UI:Refresh()
   wipe(entries)
   local pricedCount = 0
   local crafts = ProfitSortDB.craftReagents and ns.BuildCraftIndex(all) or nil
+  minHidden, minTotal = 0, 0
   for _, entry in ipairs(all) do
     ns.Evaluate(entry, ProfitSortDB.ownedFree, crafts)
     if entry.unitAH then
@@ -520,6 +599,14 @@ function UI:Refresh()
     end
     if ProfitSortDB.hideUnpriced and entry.value == nil then
       keep = false
+    end
+    if keep then
+      minTotal = minTotal + 1
+      local profit = entry.profit
+      if ProfitSortDB.minProfitOn and not (profit and profit > 0 and profit >= ProfitSortDB.minProfit) then
+        keep = false
+        minHidden = minHidden + 1
+      end
     end
     if keep then
       table.insert(entries, entry)

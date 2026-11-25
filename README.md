@@ -21,6 +21,7 @@ A World of Warcraft addon that lists your profession recipes sorted by **profit*
 - Make or buy and the tooltip line only know the recipes the profession window lists: a search or filter in that window leaves the hidden recipes out.
 - **Vendor flip finder**: at any vendor, items worth at least 10% and 1 silver more on the auction house (after the 5% cut) get a green border, a "+profit" label and a tooltip line.
 - Filters: **Craftable now** and **Has AH price**.
+- **Min profit**: hide every recipe that loses money or earns less than the amount you type per craft (like `1s`, `50s` or `1g 50s`; a plain number is silver). Sort by Profit and the list ends where the profit stops.
 - Click a row to select the recipe in the profession window; Shift-click to link the item in chat.
 - Tooltip with the reagent cost breakdown and the age of the auction price.
 - Refreshes automatically after Auctionator scans and when your bags change.

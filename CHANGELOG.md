@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0
+
+- New **Min profit** filter under the list: hides every recipe that loses money or earns less than the amount you type per craft (like `1s`, `50s` or `1g 50s`). Typing an amount turns it on; hover the check box to see how many recipes it hides.
+
 ## 1.6.0
 
 - Each crafted item now remembers its materials too, so **Commerce Authority** can search the auction house for them when crafting a writ's item is cheaper than buying it.
