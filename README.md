@@ -46,6 +46,8 @@ When the panel is closed, click the addon icon next to the profession window to 
 
 The options page (Esc > Options > AddOns, `/psort options`, or Profit Sort in the addon compartment by the minimap) turns the vendor flip marks, crafting cheaper reagents and the item tooltip line on or off.
 
+Languages: English, German, French, Spanish (Spain and Mexico), Russian and Brazilian Portuguese, following your game client.
+
 ## Feedback
 
 Found a bug or have an idea? Click **Feedback** on the options page or type `/psort feedback` in game to get the link, or go straight to [tylesser.com/feedback](https://tylesser.com/feedback/#profitsort).

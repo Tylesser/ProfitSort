@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 -- A small craft queue (right-click recipes) that becomes an Auctionator
 -- shopping list of the reagents you still need to buy.
@@ -89,7 +90,7 @@ end
 
 function ns.CreateShoppingList()
   if ns.QueueTotal() == 0 then
-    print(ns.PREFIX .. "right-click recipes to queue them first.")
+    print(ns.PREFIX .. L["right-click recipes to queue them first."])
     return
   end
 
@@ -110,14 +111,14 @@ function ns.CreateShoppingList()
   end
 
   if #searchStrings == 0 and unnamed == 0 then
-    print(ns.PREFIX .. "you already have every reagent for your queued crafts.")
+    print(ns.PREFIX .. L["you already have every reagent for your queued crafts."])
     return
   end
 
   ns.CallAuctionator("CreateShoppingList", ns.SHOPPING_LIST_NAME, searchStrings)
-  local message = ("shopping list \"%s\" has %d reagent(s) to buy."):format(ns.SHOPPING_LIST_NAME, #searchStrings)
+  local message = L["shopping list \"%s\" has %d reagent(s) to buy."]:format(ns.SHOPPING_LIST_NAME, #searchStrings)
   if unnamed > 0 then
-    message = message .. (" %d reagent(s) were skipped because their names haven't loaded yet; try again."):format(unnamed)
+    message = message .. " " .. L["%d reagent(s) were skipped because their names haven't loaded yet; try again."]:format(unnamed)
   end
   print(ns.PREFIX .. message)
 end

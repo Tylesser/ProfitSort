@@ -1,4 +1,5 @@
 local addonName, ns = ...
+local L = ns.L
 
 -- Flip finder: at a vendor, items whose Auctionator price (after the 5% AH
 -- cut) beats the vendor price by at least 1 silver and 10% get a green
@@ -191,7 +192,7 @@ events:SetScript("OnEvent", function(self, event, loadedName)
         local profit = ns.VendorFlip(index)
         if profit then
           local text = GetCoinTextureString and GetCoinTextureString(profit) or ShortMoney(profit)
-          tooltip:AddLine("Profit Sort: flip, +" .. text .. " on the AH after the 5% cut", 0.25, 1, 0.4)
+          tooltip:AddLine(L["Profit Sort: flip, +%s on the AH after the 5%% cut"]:format(text), 0.25, 1, 0.4)
           tooltip:Show()
         end
       end)

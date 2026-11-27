@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 -- Profit in item tooltips: hovering an item that a scanned recipe makes adds
 -- "Profit Sort: +2g 10s profit (cost 1g 80s)". The last scanned figures are kept
@@ -101,7 +102,7 @@ function ns.ProductTooltipLine(itemID, link)
     profitValue = Round(math.floor(unit * record.numMade * ns.AH_CUT) - record.cost)
   end
   local profit = ns.FormatMoney(profitValue, true)
-  local text = ("Profit Sort: %s%s profit (cost %s)"):format(profitValue >= 0 and "+" or "", profit,
+  local text = L["Profit Sort: %s%s profit (cost %s)"]:format(profitValue >= 0 and "+" or "", profit,
     ns.FormatMoney(record.cost, true))
   if profitValue >= 0 then
     return text, 0.25, 1, 0.25

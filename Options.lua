@@ -1,4 +1,5 @@
 local addonName, ns = ...
+local L = ns.L
 
 -- Options page: Esc > Options > AddOns > Tylesser - Auctionator Profit Sort
 local TITLE = "Tylesser - Auctionator Profit Sort"
@@ -31,11 +32,11 @@ local function CreateOptions()
   panel.name = TITLE
 
   ns.T.OptionsPage(panel, "Profit Sort",
-    "Profession profits from Auctionator prices. Sort and filter options are in the profit panel itself.")
+    L["Profession profits from Auctionator prices."] .. " " .. L["Sort and filter options are in the profit panel itself."])
 
-  local _, help = CreateCheck(panel, nil, "Highlight vendor flips",
-    "At a vendor, give items that sell for at least 10% and 1 silver more on the auction house "
-      .. "(after the 5% cut) a green border, a \"+profit\" label and a tooltip line. Same as /psort flips.",
+  local _, help = CreateCheck(panel, nil, L["Highlight vendor flips"],
+    L["At a vendor, give items that sell for at least 10% and 1 silver more on the auction house (after the 5% cut) a green border, a \"+profit\" label and a tooltip line."]
+      .. " " .. L["Same as /psort flips."],
     function()
       return ProfitSortDB.vendorFlips
     end,
@@ -43,8 +44,8 @@ local function CreateOptions()
       ns.SetVendorFlips(enabled)
     end)
 
-  _, help = CreateCheck(panel, help, "Show the profit panel with professions",
-    "Open the profit panel next to the profession window. When off, click the addon icon there to open it.",
+  _, help = CreateCheck(panel, help, L["Show the profit panel with professions"],
+    L["Open the profit panel next to the profession window. When off, click the addon icon there to open it."],
     function()
       return ProfitSortDB.shown
     end,
@@ -53,9 +54,9 @@ local function CreateOptions()
       ns.UI:UpdateVisibility()
     end)
 
-  _, help = CreateCheck(panel, help, "Craft reagents when cheaper",
-    "When a reagent is made by another recipe of the same profession and crafting it costs less than buying it, "
-      .. "use the crafting cost. The reagent tooltip shows \"crafted\" and what buying would cost.",
+  _, help = CreateCheck(panel, help, L["Craft reagents when cheaper"],
+    L["When a reagent is made by another recipe of the same profession and crafting it costs less than buying it, use the crafting cost."]
+      .. " " .. L["The reagent tooltip shows \"crafted\" and what buying would cost."],
     function()
       return ProfitSortDB.craftReagents
     end,
@@ -64,9 +65,9 @@ local function CreateOptions()
       ns.RequestRefresh()
     end)
 
-  CreateCheck(panel, help, "Show profit in item tooltips",
-    "Items you can craft get a line like \"Profit Sort: +2g 10s profit (cost 1g 80s)\" from your last "
-      .. "profession scan on this character. Only while Auctionator has a price for the item.",
+  CreateCheck(panel, help, L["Show profit in item tooltips"],
+    L["Items you can craft get a line like \"Profit Sort: +2g 10s profit (cost 1g 80s)\" from your last profession scan on this character."]
+      .. " " .. L["Only while Auctionator has a price for the item."],
     function()
       return ProfitSortDB.itemTooltips
     end,
@@ -86,7 +87,7 @@ local function CreateOptions()
   ns.T.AddCompartment({
     text = TITLE,
     onClick = ns.OpenOptions,
-    tooltip = {"Profession profits from Auctionator prices.", "Click to open the options."},
+    tooltip = {L["Profession profits from Auctionator prices."], L["Click to open the options."]},
   })
 end
 

@@ -1,4 +1,5 @@
 local addonName, ns = ...
+local L = ns.L
 
 local eventFrame = CreateFrame("Frame")
 local active
@@ -167,7 +168,7 @@ SlashCmdList.PROFITSORT = function(msg)
   msg = strtrim(msg or ""):lower()
   if msg == "reset" then
     ns.UI:ResetPosition()
-    print("|cffffd700Tylesser - Auctionator Profit Sort|r: panel docked to the profession window again.")
+    print("|cffffd700Tylesser - Auctionator Profit Sort|r: " .. L["panel docked to the profession window again."])
     return
   end
   if msg == "options" or msg == "config" then
@@ -180,13 +181,13 @@ SlashCmdList.PROFITSORT = function(msg)
   end
   if msg == "flips" then
     ns.SetVendorFlips(not ProfitSortDB.vendorFlips)
-    print("|cffffd700Tylesser - Auctionator Profit Sort|r: vendor flip marks " ..
-      (ProfitSortDB.vendorFlips and "on." or "off."))
+    print("|cffffd700Tylesser - Auctionator Profit Sort|r: "
+      .. L["vendor flip marks %s."]:format(ProfitSortDB.vendorFlips and L["on"] or L["off"]))
     return
   end
   ProfitSortDB.shown = not ProfitSortDB.shown
   ns.UI:UpdateVisibility()
   if not active then
-    print("|cffffd700Tylesser - Auctionator Profit Sort|r: open a profession window to see the profit list.")
+    print("|cffffd700Tylesser - Auctionator Profit Sort|r: " .. L["open a profession window to see the profit list."])
   end
 end

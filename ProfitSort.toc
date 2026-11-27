@@ -13,6 +13,7 @@
 ## X-Website: https://github.com/Tylesser/ProfitSort
 
 Tylesser.lua
+Locales.lua
 Core.lua
 Shopping.lua
 Providers.lua

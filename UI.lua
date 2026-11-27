@@ -1,4 +1,5 @@
 local _, ns = ...
+local L = ns.L
 
 local UI = {}
 ns.UI = UI
@@ -12,12 +13,12 @@ local COL_GAP = 4
 local ICON_SPACE = 20
 
 local COLUMNS = {
-  {key = "name", label = "Recipe", width = 168, justify = "LEFT"},
-  {key = "cost", label = "Cost", width = 60, justify = "RIGHT"},
-  {key = "value", label = "AH Value", width = 62, justify = "RIGHT"},
-  {key = "profit", label = "Profit", width = 60, justify = "RIGHT"},
-  {key = "margin", label = "Margin", width = 52, justify = "RIGHT"},
-  {key = "skillCost", label = "Per Skill", width = 60, justify = "RIGHT"},
+  {key = "name", label = L["Recipe"], width = 168, justify = "LEFT"},
+  {key = "cost", label = L["Cost"], width = 60, justify = "RIGHT"},
+  {key = "value", label = L["AH Value"], width = 62, justify = "RIGHT"},
+  {key = "profit", label = L["Profit"], width = 60, justify = "RIGHT"},
+  {key = "margin", label = L["Margin"], width = 52, justify = "RIGHT"},
+  {key = "skillCost", label = L["Per Skill"], width = 60, justify = "RIGHT"},
 }
 
 local CONTENT_WIDTH = -COL_GAP
@@ -115,77 +116,77 @@ local function RowOnEnter(self)
   end
 
   GameTooltip:AddLine(" ")
-  GameTooltip:AddLine("Reagents", 1, 0.82, 0)
+  GameTooltip:AddLine(L["Reagents"], 1, 0.82, 0)
   for _, reagent in ipairs(entry.reagents) do
     local itemID = reagent.chosenItemID or reagent.itemID
     local name = reagent.name or ns.ItemName(itemID) or ("item:" .. tostring(itemID))
     local toBuy = reagent.toBuy or reagent.count
     local right
     if toBuy == 0 then
-      right = "|cff40ff40owned|r"
+      right = "|cff40ff40" .. L["owned"] .. "|r"
     elseif reagent.source == "craft" then
-      right = "|cff909090crafted:|r " .. ns.FormatMoney(reagent.unitPrice * toBuy)
+      right = "|cff909090" .. L["crafted:"] .. "|r " .. ns.FormatMoney(reagent.unitPrice * toBuy)
     elseif reagent.unitPrice then
       right = ns.FormatMoney(reagent.unitPrice * toBuy)
       if reagent.source == "vendor" then
-        right = "|cff909090(vendor)|r " .. right
+        right = "|cff909090" .. L["(vendor)"] .. "|r " .. right
       end
     else
-      right = "|cffff5050no price|r"
+      right = "|cffff5050" .. L["no price"] .. "|r"
     end
     local left = ("%dx %s"):format(reagent.count, name)
     if reagent.owned and reagent.owned > 0 then
-      left = left .. (" |cff40ff40(have %d)|r"):format(reagent.owned)
+      left = left .. " |cff40ff40" .. L["(have %d)"]:format(reagent.owned) .. "|r"
     end
     GameTooltip:AddDoubleLine(left, right, 1, 1, 1, 1, 1, 1)
     -- Crafted reagents: which recipe makes it, and what buying would cost.
     if reagent.source == "craft" and toBuy > 0 then
-      local buy = reagent.buyPrice and ns.FormatMoney(reagent.buyPrice * toBuy) or "|cff909090no price|r"
-      GameTooltip:AddDoubleLine("   |cff909090made with " .. (reagent.craftRecipe or "?") .. "|r",
-        "|cff909090buy:|r " .. buy, 1, 1, 1, 1, 1, 1)
+      local buy = reagent.buyPrice and ns.FormatMoney(reagent.buyPrice * toBuy) or ("|cff909090" .. L["no price"] .. "|r")
+      GameTooltip:AddDoubleLine("   |cff909090" .. L["made with %s"]:format(reagent.craftRecipe or "?") .. "|r",
+        "|cff909090" .. L["buy:"] .. "|r " .. buy, 1, 1, 1, 1, 1, 1)
     end
   end
 
   GameTooltip:AddLine(" ")
-  local costLabel = entry.ownedFree and "Cost to buy what you lack" or "Crafting cost"
+  local costLabel = entry.ownedFree and L["Cost to buy what you lack"] or L["Crafting cost"]
   GameTooltip:AddDoubleLine(costLabel, ns.FormatMoney(entry.cost), 1, 1, 1, 1, 1, 1)
   if UsesCrafted(entry) then
-    GameTooltip:AddLine("Includes reagents you craft because that is cheaper than buying them", 0.6, 0.6, 0.6, true)
+    GameTooltip:AddLine(L["Includes reagents you craft because that is cheaper than buying them"], 0.6, 0.6, 0.6, true)
   end
   if entry.unitAH then
     local made = entry.numMade ~= 1 and (" x%g"):format(entry.numMade) or ""
-    GameTooltip:AddDoubleLine("AH value" .. made .. " (after 5% cut)", ns.FormatMoney(entry.value),
+    GameTooltip:AddDoubleLine(L["AH value%s (after 5%% cut)"]:format(made), ns.FormatMoney(entry.value),
       1, 1, 1, 1, 1, 1)
-    GameTooltip:AddDoubleLine("Profit", ns.FormatMoney(entry.profit), 1, 1, 1, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["Profit"], ns.FormatMoney(entry.profit), 1, 1, 1, 1, 1, 1)
     if entry.age then
-      local ageText = entry.age == 0 and "today" or (entry.age .. " day(s) ago")
+      local ageText = entry.age == 0 and L["today"] or L["%s day(s) ago"]:format(entry.age)
       if entry.age > 10 then
-        GameTooltip:AddLine("Price last seen " .. ageText, 1, 0.5, 0.25)
+        GameTooltip:AddLine(L["Price last seen %s"]:format(ageText), 1, 0.5, 0.25)
       else
-        GameTooltip:AddLine("Price last seen " .. ageText, 0.6, 0.6, 0.6)
+        GameTooltip:AddLine(L["Price last seen %s"]:format(ageText), 0.6, 0.6, 0.6)
       end
     end
   else
-    GameTooltip:AddLine("No Auctionator price for the crafted item", 1, 0.5, 0.25)
+    GameTooltip:AddLine(L["No Auctionator price for the crafted item"], 1, 0.5, 0.25)
   end
   if entry.missingReagents then
-    GameTooltip:AddLine("Some reagents have no price, so the cost is too low", 1, 0.5, 0)
+    GameTooltip:AddLine(L["Some reagents have no price, so the cost is too low"], 1, 0.5, 0)
   end
   if entry.skillChance then
     if entry.skillCost then
       local points = entry.skillUps and entry.skillUps > 1 and (" x" .. entry.skillUps) or ""
-      GameTooltip:AddDoubleLine(("Skill-up chance ~%d%%%s"):format(entry.skillChance * 100, points),
-        ns.FormatMoney(entry.skillCost) .. " per point", 1, 1, 1, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L["Skill-up chance ~%d%%%s"]:format(entry.skillChance * 100, points),
+        ns.FormatMoney(entry.skillCost) .. " " .. L["per point"], 1, 1, 1, 1, 1, 1)
     else
-      GameTooltip:AddLine("Gray recipe: no more skill points", 0.6, 0.6, 0.6)
+      GameTooltip:AddLine(L["Gray recipe: no more skill points"], 0.6, 0.6, 0.6)
     end
   end
   local queued = ns.QueuedCount(entry)
   if queued > 0 then
-    GameTooltip:AddLine(("Queued: %d for the shopping list"):format(queued), 0.4, 0.73, 1)
+    GameTooltip:AddLine(L["Queued: %d for the shopping list"]:format(queued), 0.4, 0.73, 1)
   end
-  GameTooltip:AddLine("Click to select - Shift-click to link", 0.5, 0.5, 0.5)
-  GameTooltip:AddLine("Right-click to queue - Shift-right-click to unqueue", 0.5, 0.5, 0.5)
+  GameTooltip:AddLine(L["Click to select - Shift-click to link"], 0.5, 0.5, 0.5)
+  GameTooltip:AddLine(L["Right-click to queue - Shift-right-click to unqueue"], 0.5, 0.5, 0.5)
   GameTooltip:Show()
 end
 
@@ -206,7 +207,7 @@ local function UsesOwned(entry)
   return false
 end
 
-local OWNED_TOOLTIP = "Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns."
+local OWNED_TOOLTIP = L["Count reagents already in your bags and bank as free, so Cost and Profit show what crafting from your own stock earns."]
 
 -- "Owned free (12)": how many recipes in the list it applies to.
 local function UpdateOwnedLabel()
@@ -214,9 +215,9 @@ local function UpdateOwnedLabel()
     return
   end
   if ProfitSortDB.ownedFree then
-    ownedCheck.label:SetText(("Owned free (%d)"):format(ownedApplied))
+    ownedCheck.label:SetText(L["Owned free (%d)"]:format(ownedApplied))
   else
-    ownedCheck.label:SetText("Owned free")
+    ownedCheck.label:SetText(L["Owned free"])
   end
   ownedCheck:SetHitRectInsets(0, -(ownedCheck.label:GetStringWidth() + 4), 0, 0)
 end
@@ -238,8 +239,8 @@ local function PlainMoney(copper)
   return #parts > 0 and table.concat(parts, " ") or "0"
 end
 
-local MIN_TOOLTIP = "Hide recipes that earn less than this per craft (after the 5% AH cut), every recipe that loses "
-  .. "money, and recipes without an AH price. At 0 only losses and break-even recipes are hidden."
+local MIN_TOOLTIP = L["Hide recipes that earn less than this per craft (after the 5% AH cut), every recipe that loses money, and recipes without an AH price."]
+  .. " " .. L["At 0 only losses and break-even recipes are hidden."]
 
 -- The amount box: Enter or clicking elsewhere applies the amount (and turns the filter on), Escape undoes.
 local function ApplyMinProfit(box)
@@ -410,35 +411,35 @@ local function Create()
   end
 
   -- Footer
-  local craftable = CreateCheck("Craftable now", "craftableOnly",
-    "Only show recipes you have the reagents for right now.")
+  local craftable = CreateCheck(L["Craftable now"], "craftableOnly",
+    L["Only show recipes you have the reagents for right now."])
   craftable:SetPoint("BOTTOMLEFT", 10, 9 + FILTER_ROW)
 
-  local priced = CreateCheck("Has AH price", "hideUnpriced",
-    "Hide recipes whose crafted item has no Auctionator price.")
+  local priced = CreateCheck(L["Has AH price"], "hideUnpriced",
+    L["Hide recipes whose crafted item has no Auctionator price."])
   priced:SetPoint("LEFT", craftable.label, "RIGHT", 12, 0)
 
-  local owned = CreateCheck("Owned free", "ownedFree", OWNED_TOOLTIP)
+  local owned = CreateCheck(L["Owned free"], "ownedFree", OWNED_TOOLTIP)
   owned:SetPoint("LEFT", priced.label, "RIGHT", 12, 0)
   owned:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
     GameTooltip:SetText(OWNED_TOOLTIP, 1, 1, 1, 1, true)
     if ProfitSortDB.ownedFree then
-      GameTooltip:AddLine(("Lowers the cost of %d of the %d recipes in the list."):format(ownedApplied, #entries),
+      GameTooltip:AddLine(L["Lowers the cost of %d of the %d recipes in the list."]:format(ownedApplied, #entries),
         0.25, 1, 0.25, true)
     end
     GameTooltip:Show()
   end)
   ownedCheck = owned
 
-  minCheck = CreateCheck("Min profit", "minProfitOn", MIN_TOOLTIP)
+  minCheck = CreateCheck(L["Min profit"], "minProfitOn", MIN_TOOLTIP)
   minCheck:SetPoint("BOTTOMLEFT", 10, 9)
   minCheck:SetHitRectInsets(0, -(minCheck.label:GetStringWidth() + 4), 0, 0)
   minCheck:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
     GameTooltip:SetText(MIN_TOOLTIP, 1, 1, 1, 1, true)
     if ProfitSortDB.minProfitOn then
-      GameTooltip:AddLine(("Hides %d of %d recipes."):format(minHidden, minTotal), 0.25, 1, 0.25, true)
+      GameTooltip:AddLine(L["Hides %d of %d recipes."]:format(minHidden, minTotal), 0.25, 1, 0.25, true)
     end
     GameTooltip:Show()
   end)
@@ -466,8 +467,8 @@ local function Create()
   end)
   minBox:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-    GameTooltip:SetText("Min profit per craft", 1, 0.82, 0)
-    GameTooltip:AddLine("Type an amount like 50s, 1g or 1g 50s (a plain number is silver), then press Enter.",
+    GameTooltip:SetText(L["Min profit per craft"], 1, 0.82, 0)
+    GameTooltip:AddLine(L["Type an amount like 50s, 1g or 1g 50s (a plain number is silver), then press Enter."],
       1, 1, 1, true)
     GameTooltip:Show()
   end)
@@ -487,9 +488,9 @@ local function Create()
   end)
   shoppingButton:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:SetText("Auctionator shopping list", 1, 0.82, 0)
-    GameTooltip:AddLine("Right-click recipes to queue crafts, then click here.", 1, 1, 1, true)
-    GameTooltip:AddLine(("Creates the list '%s' with the reagents you still need (minus what's in your bags and bank). At the auction house the search starts right away."):format(ns.SHOPPING_LIST_NAME), 1, 1, 1, true)
+    GameTooltip:SetText(L["Auctionator shopping list"], 1, 0.82, 0)
+    GameTooltip:AddLine(L["Right-click recipes to queue crafts, then click here."], 1, 1, 1, true)
+    GameTooltip:AddLine(L["Creates the list '%s' with the reagents you still need (minus what's in your bags and bank). At the auction house the search starts right away."]:format(ns.SHOPPING_LIST_NAME), 1, 1, 1, true)
     local toBuy = ns.ReagentsToBuy()
     if #toBuy > 0 then
       GameTooltip:AddLine(" ")
@@ -498,7 +499,7 @@ local function Create()
       end
     end
     GameTooltip:AddLine(" ")
-    GameTooltip:AddLine("Right-click to clear the queue", 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L["Right-click to clear the queue"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
   end)
   shoppingButton:SetScript("OnLeave", RowOnLeave)
@@ -524,7 +525,7 @@ local function Create()
   toggle:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     GameTooltip:SetText("Tylesser - Auctionator Profit Sort", 1, 0.82, 0)
-    GameTooltip:AddLine("Click to show the profit list.", 1, 1, 1)
+    GameTooltip:AddLine(L["Click to show the profit list."], 1, 1, 1)
     GameTooltip:Show()
   end)
   toggle:SetScript("OnLeave", RowOnLeave)
@@ -623,11 +624,11 @@ function UI:Refresh()
   end
   UpdateOwnedLabel()
 
-  panel.title:SetText("Profit - " .. (provider.GetTitle() or "Profession"))
+  panel.title:SetText(L["Profit - %s"]:format(provider.GetTitle() or L["Profession"]))
   if #all > 0 and pricedCount == 0 then
-    status:SetText("|cffff8000No AH prices yet - scan at the AH|r")
+    status:SetText("|cffff8000" .. L["No AH prices yet - scan at the AH"] .. "|r")
   else
-    status:SetText(("%d/%d priced"):format(pricedCount, #all))
+    status:SetText(L["%d/%d priced"]:format(pricedCount, #all))
   end
 
   for _, header in ipairs(headers) do
@@ -652,7 +653,7 @@ function UI:UpdateShoppingButton()
     return
   end
   local total = ns.QueueTotal()
-  shoppingButton:SetText(total > 0 and ("Shopping list (%d)"):format(total) or "Shopping list")
+  shoppingButton:SetText(total > 0 and L["Shopping list (%d)"]:format(total) or L["Shopping list"])
 end
 
 function UI:UpdateVisibility()
