@@ -39,12 +39,12 @@ Open any profession. The panel appears on the right of the profession window.
 | `/psort` or `/profitsort` | Show or hide the panel |
 | `/psort reset` | Dock the panel next to the profession window again after you moved it |
 | `/psort flips` | Turn the vendor flip marks off or on |
-| `/psort options` | Open the options page (also in Esc > Options > AddOns) |
+| `/psort options` | Open the options page (also Esc > Options > AddOns > Tylesser) |
 | `/psort feedback` | Get the link to report a bug or suggest an idea |
 
 When the panel is closed, click the addon icon next to the profession window to open it again.
 
-The options page (Esc > Options > AddOns, `/psort options`, or Profit Sort in the addon compartment by the minimap) turns the vendor flip marks, crafting cheaper reagents and the item tooltip line on or off.
+The options page (`/psort options`, Esc > Options > AddOns > Tylesser, or Profit Sort in the addon compartment by the minimap) turns the vendor flip marks, crafting cheaper reagents and the item tooltip line on or off.
 
 Languages: English, German, French, Spanish (Spain and Mexico), Russian and Brazilian Portuguese, following your game client.
 

@@ -7,7 +7,10 @@ local TITLE = "Tylesser - Auctionator Profit Sort"
 local function CreateCheck(parent, anchor, label, description, get, set)
   local check = ns.T.Check(parent, label)
   if anchor then
-    check:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -26, -14)
+    -- a line between two options (the user's request, 2026-11-28: the page's sections ran together)
+    local divider = ns.T.Divider(parent, 540, 13)
+    divider:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -26, -6)
+    check:SetPoint("TOPLEFT", divider, "BOTTOMLEFT", 0, -6)
   else
     check:SetPoint("TOPLEFT", parent, "TOPLEFT", 14, ns.T.OPTIONS_TOP)
   end
@@ -75,13 +78,8 @@ local function CreateOptions()
       ProfitSortDB.itemTooltips = enabled
     end)
 
-  if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory then
-    local category = Settings.RegisterCanvasLayoutCategory(panel, TITLE)
-    Settings.RegisterAddOnCategory(category)
-    ns.optionsCategory = category
-  elseif InterfaceOptions_AddCategory then
-    InterfaceOptions_AddCategory(panel)
-  end
+  -- shown in Tylesser's own settings window (Tylesser.lua T.RegisterOptions, 2026-11-28)
+  ns.optionsCategory = ns.T.RegisterOptions(panel, TITLE)
   ns.optionsPanel = panel
 
   ns.T.AddCompartment({
@@ -92,14 +90,7 @@ local function CreateOptions()
 end
 
 function ns.OpenOptions()
-  if ns.optionsCategory and Settings and Settings.OpenToCategory then
-    local id = ns.optionsCategory.GetID and ns.optionsCategory:GetID() or ns.optionsCategory.ID
-    Settings.OpenToCategory(id)
-  elseif ns.optionsPanel and InterfaceOptionsFrame_OpenToCategory then
-    -- called twice: the first call only opens the frame on older clients
-    InterfaceOptionsFrame_OpenToCategory(ns.optionsPanel)
-    InterfaceOptionsFrame_OpenToCategory(ns.optionsPanel)
-  end
+  ns.T.OpenOptions(ns.optionsCategory)
 end
 
 local events = CreateFrame("Frame")
