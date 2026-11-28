@@ -118,14 +118,15 @@ function ns.ItemName(itemID)
   return nil
 end
 
--- Same rule Auctionator uses for its own "To Craft" figure: a known vendor
--- price wins over the auction price.
+-- The cheaper of a known vendor price and the auction price. Some vendors sell
+-- reagents far above the auction house (WoW Forever's Black Market), so a
+-- vendor price alone must not win.
 function ns.GetReagentUnitPrice(link, itemID)
   local vendor = ns.GetVendorPrice(link, itemID)
-  if vendor then
+  local auction = ns.GetAuctionPrice(link, itemID)
+  if vendor and (not auction or vendor <= auction) then
     return vendor, "vendor"
   end
-  local auction = ns.GetAuctionPrice(link, itemID)
   if auction then
     return auction, "auction"
   end
@@ -188,7 +189,7 @@ function ns.BuildCraftIndex(entries)
   return index
 end
 
--- Unit buy price (vendor first, then AH), remembered for the rest of the scan.
+-- Unit buy price (the cheaper of vendor and AH), remembered for the rest of the scan.
 local function BuyPrice(index, itemID)
   local cached = index.buyPrices[itemID]
   if cached == nil then

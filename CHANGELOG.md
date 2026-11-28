@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.1
+
+- **Fix: vendors that sell above the auction house**: a reagent now costs the cheaper of its vendor price and its auction price. Before, a vendor price always won, so after a visit to a dear vendor such as the Black Market, recipes like the dyes showed a big loss.
+
 ## 1.9.0
 
 - **Clearer options page**: a thin line now separates each option from the next.

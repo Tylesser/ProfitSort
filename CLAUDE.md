@@ -9,7 +9,8 @@ Shared conventions, release steps and the game client are in the workspace file 
   (see the workspace CLAUDE.md).
 - `Core.lua`: constants (`ns.AH_CUT = 0.95`), `ProfitSortDB` defaults (applied on load in `Events.lua`), and price lookups. Prices come
   **only** from the documented `Auctionator.API.v1` (caller ID = addon name); never read Auctionator internals.
-  Vendor prices come first for reagents, Auctionator after that.
+  A reagent costs the cheaper of its vendor and auction price (2026-11-28: WoW Forever's Black Market vendor
+  sells reagents far above the AH, and Auctionator records its prices too).
   Make or buy: `ns.BuildCraftIndex(entries)` maps product item IDs to the recipes of one scan; `ns.Evaluate(entry,
   ownedFree, crafts)` then uses a reagent's craft cost (recipe cost / average amount made, source `"craft"`) when it is
   cheaper than buying, recursively up to `ns.MAX_CRAFT_DEPTH` (3) with a cycle guard on item IDs. Without `crafts` the

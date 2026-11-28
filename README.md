@@ -9,7 +9,7 @@ A World of Warcraft addon that lists your profession recipes sorted by **profit*
 ## Features
 
 - A panel docked next to the profession window, with one row per recipe:
-  - **Cost**: reagent cost. A known vendor price is used first, otherwise the Auctionator price. An orange `*` means a reagent has no price.
+  - **Cost**: reagent cost. The cheaper of a known vendor price and the Auctionator price. An orange `*` means a reagent has no price.
     When another recipe of the same profession makes a reagent for less, its crafting cost is used instead ("crafted" in the tooltip).
   - **AH Value**: auction price × average amount made × 0.95 (the auction house cut).
   - **Profit** and **Margin** (profit as a percentage of cost).
