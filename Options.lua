@@ -68,7 +68,7 @@ local function CreateOptions()
       ns.RequestRefresh()
     end)
 
-  CreateCheck(panel, help, L["Show profit in item tooltips"],
+  _, help = CreateCheck(panel, help, L["Show profit in item tooltips"],
     L["Items you can craft get a line like \"Profit Sort: +2g 10s profit (cost 1g 80s)\" from your last profession scan on this character."]
       .. " " .. L["Only while Auctionator has a price for the item."],
     function()
@@ -76,6 +76,29 @@ local function CreateOptions()
     end,
     function(enabled)
       ProfitSortDB.itemTooltips = enabled
+    end)
+
+  _, help = CreateCheck(panel, help, L["Owned free counts your other characters"],
+    L["With Owned free ticked in the panel, reagents in your other characters' bags, bank and mail (same realm and faction) count as free too. The reagent tooltip says who has them."]
+      .. " " .. L["Needs Syndicator (it comes with Baganator)."],
+    function()
+      return ProfitSortDB.ownedAlts
+    end,
+    function(enabled)
+      ProfitSortDB.ownedAlts = enabled
+      ns.RequestRefresh()
+    end)
+
+  CreateCheck(panel, help, L["Tell me when a crafting cooldown is ready"],
+    L["A chat line at login, and while you play, when a cooldown of this character (such as a transmute) is over. The clock on the profit panel and /psort cooldowns list every character's cooldowns."],
+    function()
+      return ProfitSortDB.cooldownNote
+    end,
+    function(enabled)
+      ProfitSortDB.cooldownNote = enabled
+      if enabled then
+        ns.ScheduleCooldownNote()
+      end
     end)
 
   -- shown in Tylesser's own settings window (Tylesser.lua T.RegisterOptions, 2026-11-28)

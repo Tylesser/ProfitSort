@@ -16,7 +16,20 @@ Shared conventions, release steps and the game client are in the workspace file 
   cheaper than buying, recursively up to `ns.MAX_CRAFT_DEPTH` (3) with a cycle guard on item IDs. Without `crafts` the
   result is the same as before. Owned free applies only to the evaluated recipe's own reagents; sub-recipes use market
   prices. `entry.fullCost` is the cost without Owned free.
-- `Shopping.lua`: the craft queue (right-click rows) and the Auctionator shopping list "Profit Sort".
+- `Shopping.lua`: the craft queue (right-click rows) and the Auctionator shopping list "Profit Sort". A queued
+  reagent is a plain saved plan (`ns.PlanReagent`): `{ name, itemID, count }`, and when make or buy crafted it
+  (`reagent.source == "craft"`, `reagent.craftEntry` = the recipe from `ns.Evaluate`) also `{ recipe, made,
+  reagents = { one level down } }` (up to `ns.MAX_CRAFT_DEPTH`, cycle guard). `ns.ReagentsToBuy()` uses what you own
+  first, then expands the rest (crafts rounded up) and returns `toBuy, toCraft`. Old queue entries (no plan) stay flat.
+- `Cooldowns.lua` (2026-11-28): crafting cooldowns of all characters in `ProfitSortDB.cooldowns["Name-Realm"]`
+  (`ns.CharacterKey()`: first word of UnitName, last realm when GetRealmName is ""). `provider.Cooldowns()` gives
+  `{ name, icon, cooldown, charges, maxCharges }` per listed recipe (Professions: `C_TradeSkillUI.GetRecipeCooldown`,
+  as Blizzard_ProfessionsRecipeSchematicForm reads it; TradeSkill: `GetTradeSkillCooldown`; Craft: none);
+  `ns.RecordCooldowns` (Events.lua, own windows only: `provider.IsOwn()`) stores `readyAt = time() + left`, a listed
+  recipe without one is ready now. A recipe appears only once seen on cooldown (the API can't tell a ready recipe
+  has one). Same-profession recipes ready at the same minute are one group (shared transmute cooldown). The clock
+  button in the panel's title bar (tooltip, click = `/psort cooldowns`), and `ns.ScheduleCooldownNote` (login + 8 s,
+  then a timer for the next one; each cooldown told once: `record.told`).
 - `Providers.lua`: one provider per profession window: the classic `TradeSkillFrame`, the classic `CraftFrame`
   (Enchanting) and the modern `ProfessionsFrame`. Each `Scan()` returns the same entry shape, documented at the top of
   the file. All three are kept on purpose: it is still unverified which one WoW Forever uses. Make or buy and the
@@ -24,7 +37,7 @@ Shared conventions, release steps and the game client are in the workspace file 
   `GetCraftItemLink` (only item links; enchants have none), Professions from `GetRecipeOutputItemData` / `outputItemID`.
 - `UI.lua`: the docked panel (columns Cost, AH Value, Profit, Margin, Per Skill; sort on header click; filters).
 - `Events.lua`: event wiring, refresh after Auctionator scans and bag changes, slash commands `/psort` and `/profitsort`
-  (`reset`, `flips`, `options`).
+  (`reset`, `flips`, `cooldowns` / `cd`, `options`).
 - `Vendor.lua`: flip finder at vendors (green border, "+profit", tooltip line). It works alongside VendorSearch's
   filtering, so test the two together. It lives here, not in VendorSearch: the user wants all AH-price features in ProfitSort.
 - `Tooltip.lua`: profit line in item tooltips ("Profit Sort: +2g 10s profit (cost 1g 80s)") for items a scanned recipe
@@ -37,7 +50,9 @@ Shared conventions, release steps and the game client are in the workspace file 
 ## Saved variables
 
 - `ProfitSortDB` (account): defaults in `ns.defaults` (Core.lua): sort, filters, `ownedFree`, `queue`, `vendorFlips`,
-  `shown`, `position`, `minProfitOn` + `minProfit` (copper; the Min profit row, `ns.ParseMoney`), `craftReagents` (make or buy, default on), `itemTooltips` (default on).
+  `shown`, `position`, `minProfitOn` + `minProfit` (copper; the Min profit row, `ns.ParseMoney`), `craftReagents` (make or buy, default on), `itemTooltips` (default on), `ownedAlts` (Owned free also counts other
+  characters through Syndicator's public API `Syndicator.API.GetInventoryInfoByItemID(id, true, true)`: bags + bank +
+  mail, the current character left out, cached 5 s; `ns.AltOwned`), `cooldownNote` (default on), `cooldowns`, `lastRealm`.
 - `ProfitSortCharDB` (per character, `## SavedVariablesPerCharacter`): defaults in `ns.charDefaults`. `products[itemID] =
   { profit, cost, value, recipe, time }`: the last scan of each item you can craft, cost without Owned free, recipes with
   unpriced reagents or no AH price left out. Bounded to `ns.MAX_PRODUCTS` (500); the oldest scans are dropped first.
@@ -48,6 +63,7 @@ Shared conventions, release steps and the game client are in the workspace file 
   when Auctionator has no price yet.
 - When the user reports a problem, first ask which profession window or provider was open, and whether
   `/console scriptErrors 1` shows a Lua error.
-- The shopping list does not expand crafted reagents: it still lists the reagent itself, not what it is crafted from.
+- The shopping list expands crafted reagents (2026-11-28) from the plan saved when the recipe was queued: requeue a
+  recipe after changing "Craft reagents when cheaper" or after prices moved the make-or-buy choice.
 - `README.md` and `CHANGELOG.md` also appear on tylesser.com. After a release, rebuild the site
   (see `../../tylesser-site/CLAUDE.md`, repo Tylesser/tylesser-site).

@@ -16,6 +16,7 @@ Tylesser.lua
 Locales.lua
 Core.lua
 Shopping.lua
+Cooldowns.lua
 Providers.lua
 UI.lua
 Events.lua

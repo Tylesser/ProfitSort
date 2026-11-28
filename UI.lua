@@ -139,6 +139,10 @@ local function RowOnEnter(self)
       left = left .. " |cff40ff40" .. L["(have %d)"]:format(reagent.owned) .. "|r"
     end
     GameTooltip:AddDoubleLine(left, right, 1, 1, 1, 1, 1, 1)
+    if reagent.ownedAlts then
+      GameTooltip:AddLine("   |cff909090" .. L["on your other characters: %s"]:format(ns.AltText(reagent.ownedAlts)) .. "|r",
+        1, 1, 1, true)
+    end
     -- Crafted reagents: which recipe makes it, and what buying would cost.
     if reagent.source == "craft" and toBuy > 0 then
       local buy = reagent.buyPrice and ns.FormatMoney(reagent.buyPrice * toBuy) or ("|cff909090" .. L["no price"] .. "|r")
@@ -304,6 +308,30 @@ local function Create()
     UI:UpdateVisibility()
   end)
 
+  -- Crafting cooldowns of all your characters (Cooldowns.lua): hover for the list, click to print it.
+  local cooldownButton = CreateFrame("Button", nil, titleBar)
+  cooldownButton:SetSize(20, 20)
+  cooldownButton:SetPoint("RIGHT", closeButton, "LEFT", -6, 0)
+  cooldownButton.icon = cooldownButton:CreateTexture(nil, "ARTWORK")
+  cooldownButton.icon:SetAllPoints()
+  cooldownButton.icon:SetTexture("Interface\\Icons\\INV_Misc_PocketWatch_01")
+  cooldownButton.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  cooldownButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  cooldownButton.count = cooldownButton:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+  cooldownButton.count:SetPoint("BOTTOMRIGHT", 2, -2)
+  cooldownButton.count:SetTextColor(0.25, 1, 0.25)
+  cooldownButton:SetScript("OnClick", ns.PrintCooldowns)
+  cooldownButton:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+    GameTooltip:SetText(L["Crafting cooldowns"], 1, 0.82, 0)
+    ns.AddCooldownLines(GameTooltip)
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddLine(L["Click to print the list in chat (also /psort cooldowns)."], 0.5, 0.5, 0.5, true)
+    GameTooltip:Show()
+  end)
+  cooldownButton:SetScript("OnLeave", RowOnLeave)
+  panel.cooldownButton = cooldownButton
+
   -- Column headers (click to sort)
   local x = LEFT
   for _, column in ipairs(COLUMNS) do
@@ -424,6 +452,13 @@ local function Create()
   owned:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
     GameTooltip:SetText(OWNED_TOOLTIP, 1, 1, 1, 1, true)
+    if ProfitSortDB.ownedAlts then
+      if ns.SyndicatorReady() then
+        GameTooltip:AddLine(L["Also counts your other characters' bags, bank and mail (from Syndicator)."], 0.6, 0.6, 0.6, true)
+      else
+        GameTooltip:AddLine(L["Your other characters are only counted with Syndicator installed."], 1, 0.5, 0.25, true)
+      end
+    end
     if ProfitSortDB.ownedFree then
       GameTooltip:AddLine(L["Lowers the cost of %d of the %d recipes in the list."]:format(ownedApplied, #entries),
         0.25, 1, 0.25, true)
@@ -491,11 +526,19 @@ local function Create()
     GameTooltip:SetText(L["Auctionator shopping list"], 1, 0.82, 0)
     GameTooltip:AddLine(L["Right-click recipes to queue crafts, then click here."], 1, 1, 1, true)
     GameTooltip:AddLine(L["Creates the list '%s' with the reagents you still need (minus what's in your bags and bank). At the auction house the search starts right away."]:format(ns.SHOPPING_LIST_NAME), 1, 1, 1, true)
-    local toBuy = ns.ReagentsToBuy()
+    local toBuy, toCraft = ns.ReagentsToBuy()
     if #toBuy > 0 then
       GameTooltip:AddLine(" ")
       for _, reagent in ipairs(toBuy) do
         GameTooltip:AddDoubleLine(reagent.name or ("item:" .. tostring(reagent.itemID)), reagent.count, 1, 1, 1, 1, 1, 1)
+      end
+    end
+    if #toCraft > 0 then
+      GameTooltip:AddLine(" ")
+      GameTooltip:AddLine(L["Craft first (their reagents are in the list):"], 1, 0.82, 0)
+      for _, reagent in ipairs(toCraft) do
+        GameTooltip:AddDoubleLine(reagent.name or ("item:" .. tostring(reagent.itemID)),
+          ("%dx %s"):format(reagent.count, reagent.recipe or "?"), 1, 1, 1, 0.6, 0.6, 0.6)
       end
     end
     GameTooltip:AddLine(" ")
@@ -643,6 +686,9 @@ function UI:Refresh()
       header.arrow:Hide()
     end
   end
+
+  local ready = ns.ReadyCooldowns()
+  panel.cooldownButton.count:SetText(ready > 0 and ready or "")
 
   self:UpdateRows()
   self:UpdateShoppingButton()

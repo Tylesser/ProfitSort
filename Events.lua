@@ -5,6 +5,19 @@ local eventFrame = CreateFrame("Frame")
 local active
 local hookedFrames = {}
 
+-- The crafting cooldowns the open window shows (Cooldowns.lua), from your own windows only.
+function ns.RecordCooldowns(provider)
+  provider = provider or active
+  if not (provider and provider.Cooldowns and provider.IsOwn and provider.IsOwn()) then
+    return 0
+  end
+  local ok, list = pcall(provider.Cooldowns)
+  if not ok then
+    return 0
+  end
+  return ns.RememberCooldowns(list, provider.GetTitle())
+end
+
 local refreshPending = false
 function ns.RequestRefresh()
   if refreshPending or not active then
@@ -14,6 +27,7 @@ function ns.RequestRefresh()
   C_Timer.After(0.2, function()
     refreshPending = false
     if active then
+      ns.RecordCooldowns(active)
       ns.UI:Refresh()
     end
   end)
@@ -35,6 +49,7 @@ local function Activate(provider)
   end
   active = provider
   ns.UI:Attach(provider)
+  ns.RecordCooldowns(provider)
 end
 
 function ns.Deactivate(provider)
@@ -111,6 +126,8 @@ local handlers = {
   end,
   PLAYER_LOGIN = function()
     ns.CallAuctionator("RegisterForDBUpdate", ns.RequestRefresh)
+    -- crafting cooldowns of this character that are ready (after the login chat has settled)
+    C_Timer.After(8, ns.ScheduleCooldownNote)
   end,
   TRADE_SKILL_SHOW = function()
     C_Timer.After(0, function()
@@ -177,6 +194,10 @@ SlashCmdList.PROFITSORT = function(msg)
   end
   if msg == "feedback" then
     ns.T.ShowFeedback()
+    return
+  end
+  if msg == "cooldowns" or msg == "cd" then
+    ns.PrintCooldowns()
     return
   end
   if msg == "flips" then

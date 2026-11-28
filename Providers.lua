@@ -4,7 +4,17 @@ local _, ns = ...
 -- Each Scan() returns a list of entries:
 --   { key, name, icon, link, itemID, numMade, numAvailable, color,
 --     reagents = { { name, link, itemID, count, alternatives } } }
+-- IsOwn() is false for a linked (or guild / NPC) window; Cooldowns() returns { { name, icon, cooldown (seconds
+-- left, nil when none), charges, maxCharges } } for the recipes the window lists (Cooldowns.lua).
 ns.Providers = {}
+
+-- A number the addon may read (not a secret value), else nil.
+local function Number(value)
+  if type(value) ~= "number" or (issecretvalue and issecretvalue(value)) then
+    return nil
+  end
+  return value
+end
 
 local function IsHeader(skillType)
   return skillType == "header" or skillType == "subheader"
@@ -51,6 +61,25 @@ ns.Providers.TradeSkill = {
 
   GetTitle = function()
     return GetTradeSkillLine and (GetTradeSkillLine())
+  end,
+
+  IsOwn = function()
+    return not (IsTradeSkillLinked and IsTradeSkillLinked())
+  end,
+
+  Cooldowns = function()
+    local list = {}
+    if not (GetTradeSkillCooldown and GetNumTradeSkills) then
+      return list
+    end
+    for index = 1, GetNumTradeSkills() do
+      local name, skillType = GetTradeSkillInfo(index)
+      if name and not IsHeader(skillType) then
+        local ok, left = pcall(GetTradeSkillCooldown, index)
+        table.insert(list, {name = name, icon = GetTradeSkillIcon(index), cooldown = ok and Number(left) or nil})
+      end
+    end
+    return list
   end,
 
   Scan = function()
@@ -127,6 +156,14 @@ ns.Providers.Craft = {
       end
     end
     return GetCraftName and GetCraftName()
+  end,
+
+  IsOwn = function()
+    return true
+  end,
+
+  Cooldowns = function()
+    return {} -- the classic craft window (Enchanting) has no recipe cooldowns
   end,
 
   Scan = function()
@@ -238,6 +275,39 @@ ns.Providers.Professions = {
   GetTitle = function()
     local info = C_TradeSkillUI.GetBaseProfessionInfo and C_TradeSkillUI.GetBaseProfessionInfo()
     return info and info.professionName
+  end,
+
+  IsOwn = function()
+    for _, name in ipairs({"IsTradeSkillLinked", "IsTradeSkillGuild", "IsNPCCrafting", "IsTradeSkillGuildMember"}) do
+      local fn = C_TradeSkillUI[name]
+      if fn and fn() then
+        return false
+      end
+    end
+    return true
+  end,
+
+  -- C_TradeSkillUI.GetRecipeCooldown(recipeID): seconds left (nil when ready), isDayCooldown, charges,
+  -- maxCharges, as Blizzard_ProfessionsRecipeSchematicForm reads it. Every learned recipe, not only the filtered.
+  Cooldowns = function()
+    local list = {}
+    if not (C_TradeSkillUI.GetRecipeCooldown and C_TradeSkillUI.GetAllRecipeIDs) then
+      return list
+    end
+    if C_TradeSkillUI.IsTradeSkillReady and not C_TradeSkillUI.IsTradeSkillReady() then
+      return list
+    end
+    for _, recipeID in ipairs(C_TradeSkillUI.GetAllRecipeIDs() or {}) do
+      local info = C_TradeSkillUI.GetRecipeInfo(recipeID)
+      if info and info.learned and info.name then
+        local ok, left, _, charges, maxCharges = pcall(C_TradeSkillUI.GetRecipeCooldown, recipeID)
+        if ok then
+          table.insert(list, {name = info.name, icon = info.icon, cooldown = Number(left),
+            charges = Number(charges), maxCharges = Number(maxCharges)})
+        end
+      end
+    end
+    return list
   end,
 
   Scan = function()

@@ -18,6 +18,11 @@ ns.defaults = {
   position = nil,
   craftReagents = true, -- make or buy: craft a reagent when that is cheaper
   itemTooltips = true, -- profit line in the tooltips of items you can craft
+  ownedAlts = false, -- Owned free also counts your other characters' reagents (Syndicator)
+  cooldownNote = true, -- a chat line when a crafting cooldown of this character is ready (Cooldowns.lua)
+  -- cooldowns = { ["Name-Realm"] = { name, class, recipes = { [recipe name] = { readyAt, prof, icon, charges,
+  --   maxCharges, told } } } }: crafting cooldowns seen in the profession window, account-wide (Cooldowns.lua)
+  cooldowns = {},
 }
 
 -- ProfitSortCharDB (per character): products = { [itemID] = { profit, cost, value, recipe, time } },
@@ -135,16 +140,100 @@ end
 
 local GetItemCount = (C_Item and C_Item.GetItemCount) or GetItemCount
 
--- How many of a reagent you have in your bags and bank (any of its qualities).
-local function OwnedCount(reagent)
+-- Your other characters ------------------------------------------------------------------------------------
+-- Only through Syndicator's public API (Syndicator.API), never its saved data: characters on this connected
+-- realm and faction (the ones you can mail), their bags, bank and mailbox. The current character is left out
+-- (GetItemCount counts it). Cached for a few seconds: a refresh asks for every reagent of every recipe.
+local altCache, altCacheTime = {}, 0
+
+function ns.SyndicatorReady()
+  local api = Syndicator and Syndicator.API
+  if not (api and api.GetInventoryInfoByItemID) then
+    return false
+  end
+  if api.IsReady then
+    local ok, ready = pcall(api.IsReady)
+    return ok and ready and true or false
+  end
+  return true
+end
+
+-- How many of an item your other characters have, and { { name = "Alt", count = n }, ... } most first.
+function ns.AltOwned(itemID)
+  if not itemID or not ns.SyndicatorReady() then
+    return 0, {}
+  end
+  local now = GetTime and GetTime() or 0
+  if now - altCacheTime > 5 then
+    altCache, altCacheTime = {}, now
+  end
+  local cached = altCache[itemID]
+  if cached then
+    return cached.total, cached.list
+  end
+  local api = Syndicator.API
+  local total, list = 0, {}
+  local ok, info = pcall(api.GetInventoryInfoByItemID, itemID, true, true)
+  local currentOk, current = pcall(api.GetCurrentCharacter or function() return nil end)
+  current = currentOk and current or nil
+  if ok and type(info) == "table" then
+    for _, char in ipairs(info.characters or {}) do
+      local name = char.character
+      if type(name) == "string" then
+        local realm = char.realmNormalized
+        local full = (realm and realm ~= "") and (name .. "-" .. realm) or name
+        local count = (char.bags or 0) + (char.bank or 0) + (char.mail or 0)
+        if full ~= current and count > 0 then
+          total = total + count
+          table.insert(list, {name = name, count = count})
+        end
+      end
+    end
+  end
+  table.sort(list, function(a, b)
+    if a.count ~= b.count then
+      return a.count > b.count
+    end
+    return a.name < b.name
+  end)
+  altCache[itemID] = {total = total, list = list}
+  return total, list
+end
+
+-- "Ann 5, Bob 2" for a reagent's list of characters (at most four, then "...").
+function ns.AltText(list)
+  local parts = {}
+  for index, char in ipairs(list or {}) do
+    if index > 4 then
+      table.insert(parts, "...")
+      break
+    end
+    table.insert(parts, char.name .. " " .. char.count)
+  end
+  return table.concat(parts, ", ")
+end
+
+-- How many of a reagent you have in your bags and bank (any of its qualities); with alts, also on your other
+-- characters (the second value lists them).
+local function OwnedCount(reagent, alts)
   local itemIDs = reagent.alternatives or {reagent.itemID}
-  local total = 0
+  local total, where = 0, nil
   for _, itemID in ipairs(itemIDs) do
     if itemID then
       total = total + (GetItemCount(itemID, true) or 0)
+      if alts then
+        local count, list = ns.AltOwned(itemID)
+        if count > 0 then
+          total = total + count
+          where = where or {}
+          for _, char in ipairs(list) do
+            table.insert(where, char)
+          end
+        end
+      end
     end
   end
-  return total
+  return total, where
 end
 
 -- Estimated chance of a skill point by recipe colour. The game uses
@@ -285,13 +374,14 @@ function ns.Evaluate(entry, ownedFree, crafts)
       end
     end
 
-    reagent.buyPrice, reagent.craftPrice, reagent.craftRecipe = unit, nil, nil
+    reagent.buyPrice, reagent.craftPrice, reagent.craftRecipe, reagent.craftEntry = unit, nil, nil, nil
     if crafts then
       local craftID
       for _, itemID in ipairs(reagent.alternatives or {reagent.itemID}) do
         local craftUnit, recipe = CraftUnitCost(crafts, itemID, 1, visiting)
         if craftUnit and (reagent.craftPrice == nil or craftUnit < reagent.craftPrice) then
-          reagent.craftPrice, reagent.craftRecipe, craftID = craftUnit, recipe.name, itemID
+          -- craftEntry: the recipe that makes it, for the shopping list (Shopping.lua expands it)
+          reagent.craftPrice, reagent.craftRecipe, reagent.craftEntry, craftID = craftUnit, recipe.name, recipe, itemID
         end
       end
       if reagent.craftPrice and (unit == nil or reagent.craftPrice < unit) then
@@ -301,9 +391,9 @@ function ns.Evaluate(entry, ownedFree, crafts)
     reagent.unitPrice, reagent.source, reagent.chosenItemID = unit, source, chosenID
 
     local toBuy = reagent.count
-    reagent.owned = nil
+    reagent.owned, reagent.ownedAlts = nil, nil
     if ownedFree then
-      reagent.owned = OwnedCount(reagent)
+      reagent.owned, reagent.ownedAlts = OwnedCount(reagent, ProfitSortDB and ProfitSortDB.ownedAlts)
       toBuy = math.max(0, reagent.count - reagent.owned)
     end
     reagent.toBuy = toBuy

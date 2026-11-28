@@ -16,7 +16,9 @@ A World of Warcraft addon that lists your profession recipes sorted by **profit*
 - Click a column header to sort; click again to reverse the order.
 - **Per Skill**: estimated cost per skill point (orange 100%, yellow ~75%, green ~25% chance). Sort by it to level a profession cheaply.
 - **Owned free** option: count reagents already in your bags and bank as free. While it's on, the box shows how many recipes in the list it lowers the cost of, like "Owned free (12)".
-- **Craft queue + shopping list**: right-click recipes to queue crafts, then **Shopping list** creates an Auctionator shopping list of the reagents you still need.
+- **Craft queue + shopping list**: right-click recipes to queue crafts, then **Shopping list** creates an Auctionator shopping list of the reagents you still need. A reagent that is cheaper to craft is replaced by what crafting it takes (its own reagents, minus what you own); the button's tooltip lists what to craft first.
+- **Owned free on your other characters** (option): reagents on your other characters (bags, bank and mail, same realm and faction) count as free too, and the reagent tooltip says who has them. Needs [Syndicator](https://www.curseforge.com/wow/addons/syndicator) (it comes with Baganator).
+- **Crafting cooldowns**: the clock on the panel lists the cooldowns (transmutes and the like) of all your characters and when each is ready again. A recipe shows up once you have used it with its profession window open. A chat line tells you when one of this character's cooldowns is over (you can turn it off).
 - **Profit in item tooltips**: items you can craft show their profit, like "Profit Sort: +2g 10s profit (cost 1g 80s)". The value follows the current auction price; the reagent cost is from your last time in that profession window.
 - Make or buy and the tooltip line only know the recipes the profession window lists: a search or filter in that window leaves the hidden recipes out.
 - **Vendor flip finder**: at any vendor, items worth at least 10% and 1 silver more on the auction house (after the 5% cut) get a green border, a "+profit" label and a tooltip line.
@@ -39,12 +41,13 @@ Open any profession. The panel appears on the right of the profession window.
 | `/psort` or `/profitsort` | Show or hide the panel |
 | `/psort reset` | Dock the panel next to the profession window again after you moved it |
 | `/psort flips` | Turn the vendor flip marks off or on |
+| `/psort cooldowns` | List the crafting cooldowns of all your characters |
 | `/psort options` | Open the options page (also Esc > Options > AddOns > Tylesser) |
 | `/psort feedback` | Get the link to report a bug or suggest an idea |
 
 When the panel is closed, click the addon icon next to the profession window to open it again.
 
-The options page (`/psort options`, Esc > Options > AddOns > Tylesser, or Profit Sort in the addon compartment by the minimap) turns the vendor flip marks, crafting cheaper reagents and the item tooltip line on or off.
+The options page (`/psort options`, Esc > Options > AddOns > Tylesser, or Profit Sort in the addon compartment by the minimap) turns the vendor flip marks, crafting cheaper reagents, the item tooltip line, counting your other characters' reagents and the cooldown chat line on or off.
 
 Languages: English, German, French, Spanish (Spain and Mexico), Russian and Brazilian Portuguese, following your game client.
 

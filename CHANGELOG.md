@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.0
+
+- **Crafting cooldowns of all your characters**: a clock on the profit panel lists the cooldowns (transmutes and the like) of every character and when each is ready again; `/psort cooldowns` prints the list. A recipe shows up once you have used it with its profession window open. A chat line tells you when one of this character's cooldowns is over, at login or while you play (option "Tell me when a crafting cooldown is ready", on by default).
+- **Shopping list with crafted reagents**: when a reagent is cheaper to craft, the shopping list now holds what crafting it takes (its own reagents, as many as the crafts need, minus what you own) instead of the reagent itself. The button's tooltip lists what to craft first.
+- **Owned free on your other characters** (option, off by default): with Owned free ticked, reagents on your other characters (bags, bank and mail, same realm and faction) count as free too, and the reagent tooltip says who has them. Needs Syndicator (it comes with Baganator).
+
 ## 1.9.1
 
 - **Fix: vendors that sell above the auction house**: a reagent now costs the cheaper of its vendor price and its auction price. Before, a vendor price always won, so after a visit to a dear vendor such as the Black Market, recipes like the dyes showed a big loss.
